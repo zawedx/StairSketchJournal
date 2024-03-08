@@ -19,7 +19,9 @@ void initialize(bool save = false, double win_time = cfg.win_time) {
 	HashMap* hmap = new HashMap;
 	elem_t e; double ts, ts_begin;
 	fr->read(e, ts); ts_begin = ts;
-
+	int count_read = 1;
+	unordered_map<elem_t, int> count_win32;
+	int count_win32_total = 0;
 	for (int i = 1; i <= cfg.win_num; ) {
 		hmap->add(i, e);
 		if (save) {
@@ -28,9 +30,17 @@ void initialize(bool save = false, double win_time = cfg.win_time) {
 			elem_set.insert(e);
 		}
 		if (!fr->read(e, ts)) break;
+		if (i == 32) count_win32[e] = 1;
+		if (i == 32) count_win32_total ++;
+		count_read++;
+		if (count_read % 4000000 == 0) 
+			fprintf(stderr, "\"i=%d, ts-tsbegin=%.4lf\"\n", i, ts - ts_begin);
 		if (ts - ts_begin > i * win_time)
 			i++;
 	}
+	fprintf(stderr, "\"win32=%d\" ", (int)count_win32.size());
+	fprintf(stderr, "\"win32total=%d\" ", count_win32_total);
+	fprintf(stderr, "\"total read=%d\" ", count_read);
 	if (elems != nullptr) delete elems;
 	elem_cnt = hmap->all_elements(elems);
 	delete fr;
@@ -53,6 +63,8 @@ void initialize_win_num_test() {
 		win_set[i][e]++;
 		elem_set.insert(e);
 		if (!fr->read(e, ts)) break;
+		if (ts - ts_begin > i * cfg.win_time) 
+			fprintf(stderr, "\"i=%d\" ", i);
 		if (ts - ts_begin > i * cfg.win_time)
 			i++;
 	}
@@ -83,7 +95,7 @@ void figure1(const char* file_name) {
 		fprintf(fp, "%d,", i);
 	fprintf(fp, "\n");
 
-	test1("sbf",  build_sbf(cfg.memory),  fpr, fp);
+	test1("sbf",  build_sbf(cfg.memory, 5),  fpr, fp);
 	test1("pbf",  build_pbf(cfg.memory),  fpr, fp);
 	test1("iabf", build_iabf(cfg.memory), fpr, fp);
 
@@ -102,7 +114,7 @@ void figure1_2() {
 }
 
 void figure1_3() {
-	cfg = config("webpage", 8, 8, 60, MB(2));
+	cfg = config("webpage", 32, 32, 60, MB(4));
 	figure1("figure1_3.csv");
 }
 
@@ -135,12 +147,12 @@ void figure2_1() {
 
 void figure2_2() {
 	cfg = config("zipf", 16, 8, 60, MB(5));
-	figure2("figure2_1.csv");
+	figure2("figure2_2.csv");
 }
 
 void figure2_3() {
 	cfg = config("webpage", 16, 8, 60, MB(1));
-	figure2("figure2_1.csv");
+	figure2("figure2_3.csv");
 }
 
 template<class sketch> void test3(const char* name, sketch *sk, double *are, FILE *fp) {
@@ -225,7 +237,7 @@ void figure5(const char* file_name, int m_begin, int m_end, int m_step) {
 	fprintf(fp, "Memory(MB),SBF,PBF,IABF\n");
 	for (int mem = m_begin; mem <= m_end; mem += m_step) {
 		cfg.memory = mem;
-		fprintf(fp, "%d,%.6f,%.6f,%.6f\n", mem/1024/1024, bf_test_wfpr(build_sbf(mem)),
+		fprintf(fp, "%d,%.6f,%.6f,%.6f\n", mem/1024/1024, bf_test_wfpr(build_sbf(mem, 5)),
 			bf_test_wfpr(build_pbf(mem)), bf_test_wfpr(build_iabf(mem)));
 		fflush(fp);
 	}
@@ -243,7 +255,7 @@ void figure5_2() {
 }
 
 void figure5_3() {
-	cfg = config("webpage", 8, 8, 60, MB(2));
+	cfg = config("webpage", 32, 32, 60, MB(2));
 	figure5("figure5_3.csv", MB(2), MB(16), MB(2));
 }
 
@@ -548,6 +560,8 @@ void figure11_2() {
 int main() {
 	srand(1214);
 	
-	figure9_3();
+	// figure5_1();
+	// figure8_2();
+	figure6_1();
 	return 0;
 }

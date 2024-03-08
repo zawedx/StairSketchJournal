@@ -246,6 +246,8 @@ void cnt_test_aae(Sketch *sketch, double *aae) {
 				tot++;
 			}
 		}
+		// fprintf(stderr, "\"%d\" ", tot);
+		// if (tot != 0) 
 		aae[i - start + 1] /= tot;
 	}
 }
@@ -276,9 +278,9 @@ double weighted_score(double *score) {
 	double ret = 0;
 	for (int i = 1; i <= cfg.ds_win_num; ++i) {
 		ret += score[i] / (cfg.ds_win_num - i + 1);
-		//fprintf(stderr, "%.4f ", score[i]);
+		fprintf(stderr, "%.4f ", score[i]);
 	}
-	//fprintf(stderr, " %.4f\n", ret);
+	fprintf(stderr, " %.4f\n", ret);
 	return ret;
 }
 

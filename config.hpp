@@ -13,6 +13,9 @@ public:
 	int win_num, ds_win_num;
 	double win_time;
 	int memory;
+	/*
+		main.cpp line 332~336
+	*/
 };
 
 config cfg;
