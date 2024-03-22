@@ -10,16 +10,19 @@ public:
 	file_reader(config cfg) : dataset(cfg.dataset), total_time(cfg.win_num * cfg.win_time) {
 		if (dataset == "webpage") {
 			unit_size = 16, ts_offset = 8, elen = 8;
-			file_pattern = "./data/webdocs_timestamp%02d.dat";
+			// file_pattern = "./data/webdocs_timestamp%02d.dat";
+			file_pattern = "/share/datasets/webdocs_timestamp/webdocs_timestamp%02d.dat";
 			id_begin = 0; id_end = 0; id_step = 1;
 		} else if (dataset == "zipf") {
 			unit_size = 12, ts_offset = 4, elen = 4;
-			file_pattern = "./data/zipf_timestamp%03d.dat";
+			// file_pattern = "./data/zipf_timestamp%03d.dat";
+			file_pattern = "/share/datasets/zipf_timestamp/zipf_timestamp%03d.dat";
 			id_begin = 3; id_end = 3; id_step = 3;
 		} else if (dataset == "CAIDA") {
 			unit_size = 21, ts_offset = 13, elen = 4;
-			file_pattern = "./data/13%02d00.dat";
-			id_begin = 0; id_end = 4/*59*/; id_step = 1;
+			// file_pattern = "./data/13%02d00.dat";
+			file_pattern = "/share/datasets/CAIDA2018/dataset/13%02d00.dat";
+			id_begin = 0; id_end = 59; id_step = 1;
 		} else assert(0);
 		buf = new char[BUF_SIZE];
 
@@ -41,6 +44,7 @@ public:
 			if (len == 0) {
 				if (id == id_end) return false;
 				id += id_step;
+				if (id == 5) id++;// CAIDA 130500.dat miss
 				sprintf(file_name, file_pattern.c_str(), id);
 				fprintf(stderr, "filereader: opening file %s\n", file_name);
 				fclose(fp);

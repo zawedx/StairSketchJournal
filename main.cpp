@@ -104,11 +104,11 @@ void figure1(const char* file_name) {
 }
 
 void figure1_1() {
-	cfg = config("CAIDA", 8, 8, 60, MB(5));
+	cfg = config("CAIDA", 32, 32, 60, MB(10));
 	figure1("figure1_1.csv");
 }
 
-void figure1_2() {
+void figure1_2() {// not appearing in the paper
 	cfg = config("zipf", 8, 8, 60, MB(10));
 	figure1("figure1_2.csv");
 }
@@ -141,17 +141,17 @@ void figure2(const char* file_name) {
 }
 
 void figure2_1() {
-	cfg = config("CAIDA", 16, 8, 60, MB(3));
+	cfg = config("CAIDA", 16, 8, 60, MB(6));
 	figure2("figure2_1.csv");
 }
 
-void figure2_2() {
+void figure2_2() {// not appearing in the paper
 	cfg = config("zipf", 16, 8, 60, MB(5));
 	figure2("figure2_2.csv");
 }
 
 void figure2_3() {
-	cfg = config("webpage", 16, 8, 60, MB(1));
+	cfg = config("webpage", 16, 8, 60, MB(2));
 	figure2("figure2_3.csv");
 }
 
@@ -274,17 +274,17 @@ void figure6(const char* file_name, int m_begin, int m_end, int m_step) {
 }
 
 void figure6_1() {
-	cfg = config("CAIDA", 8, 8, 60, MB(100));
+	cfg = config("CAIDA", 32, 32, 60, MB(100));
 	figure6("figure6_1.csv", MB(100), MB(180), MB(10));
 }
 
 void figure6_2() {
-	cfg = config("zipf", 8, 8, 60, MB(160));
+	cfg = config("zipf", 32, 32, 60, MB(160));
 	figure6("figure6_2.csv", MB(160), MB(240), MB(10));
 }
 
 void figure6_3() {
-	cfg = config("webpage", 8, 8, 60, MB(40));
+	cfg = config("webpage", 32, 32, 60, MB(40));
 	figure6("figure6_3.csv",MB(40), MB(80), MB(5));
 }
 
@@ -379,7 +379,7 @@ void figure8_3() {
 
 void figure9_1() {
 	FILE *fp = fopen("figure9_1.csv", "w");
-	int mem = 5*1024*1024;
+	int mem = 10*1024*1024;
 	cfg = config("CAIDA", 8, 8, 60, mem);
 	fprintf(fp, "Window Time(s),SCM,SBF,PBF,IABF\n");
 	for (int tim = 10; tim <= 60; tim += 10) {
@@ -393,7 +393,7 @@ void figure9_1() {
 
 void figure9_2() {
 	FILE *fp = fopen("figure9_2.csv", "w");
-	cfg = config("CAIDA", 8, 8, 60, MB(150));
+	cfg = config("CAIDA", 8, 8, 60, MB(300));
 	fprintf(fp, "Window Time(s),SCM,SCU,Ada CM,IACM\n");
 	for (int tim = 10; tim <= 60; tim += 10) {
 		initialize(true, tim);
@@ -408,7 +408,7 @@ void figure9_2() {
 
 void figure9_3() {
 	FILE *fp = fopen("figure9_3.csv", "w");
-	cfg = config("CAIDA", 8, 8, 60, MB(60));
+	cfg = config("CAIDA", 8, 8, 60, MB(300));
 	fprintf(fp, "Window Time(s),SCM,SCU,Ada CM,IACM\n");
 	for (int tim = 10; tim <= 60; tim += 10) {
 		initialize(true, tim);
@@ -422,7 +422,7 @@ void figure9_3() {
 }
 
 void figure10_1() {
-	cfg = config("CAIDA", 8, 8, 60, MB(15));
+	cfg = config("CAIDA", 8, 8, 60, MB(30));
 	
 	initialize();
 	FILE *fp = fopen("figure10_1.csv", "w");
@@ -447,7 +447,7 @@ void figure10_1() {
 }
 
 void figure10_2() {
-	cfg = config("CAIDA", 8, 8, 60, MB(100));
+	cfg = config("CAIDA", 8, 8, 60, MB(300));
 
 	initialize(true);
 	FILE *fp = fopen("figure10_2.csv", "w");
@@ -477,7 +477,7 @@ void figure10_2() {
 }
 
 void figure10_3() {
-	cfg = config("CAIDA", 8, 8, 60, MB(100));
+	cfg = config("CAIDA", 8, 8, 60, MB(300));
 
 	initialize(true);
 	FILE *fp = fopen("figure10_3.csv", "w");

@@ -37,11 +37,11 @@ vector<tuple<int, int, int, int> > stair_config(int memory, int k) {
 	return ds_config;
 }
 
-stair_cu* build_scu(int memory, int level = 3) {
+stair_cu* build_scu(int memory, int level = 5) {
 	return new stair_cu(stair_config(memory, level));
 }
 
-stair_bf* build_sbf(int memory, int level = 3) {
+stair_bf* build_sbf(int memory, int level = 5) {
 	return new stair_bf(stair_config(memory, level));
 }
 
@@ -57,7 +57,7 @@ pbf2* build_pbf2(int memory) {
 	return new pbf2(cfg.win_num, memory, 2);
 }
 
-stair_cm* build_scm(int memory, int level = 3) {
+stair_cm* build_scm(int memory, int level = 5) {
 	return new stair_cm(stair_config(memory, level));
 }
 

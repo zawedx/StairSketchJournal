@@ -15,6 +15,11 @@ public:
 	int memory;
 	/*
 		main.cpp line 332~336
+		dataset:	CAIDA / zipf / webpage
+		win_num:	length of window
+		ds_win_num:	length of window (data selected as data points)
+		win_time:	timestamp difference
+		memory:		sketch memory
 	*/
 };
 
