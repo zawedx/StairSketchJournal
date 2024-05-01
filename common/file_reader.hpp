@@ -4,14 +4,15 @@
 #include <cassert>
 #include <string>
 #include "config.hpp"
+#include "common.hpp"
 
 class file_reader {
 public:
 	file_reader(config cfg) : dataset(cfg.dataset), total_time(cfg.win_num * cfg.win_time) {
 		if (dataset == "webpage") {
 			unit_size = 16, ts_offset = 8, elen = 8;
-			// file_pattern = "./data/webdocs_timestamp%02d.dat";
-			file_pattern = "/share/datasets/webdocs_timestamp/webdocs_timestamp%02d.dat";
+			file_pattern = "./stair_sketch/data/webdocs_timestamp%02d.dat";
+			// file_pattern = "/share/datasets/webdocs_timestamp/webdocs_timestamp%02d.dat";
 			id_begin = 0; id_end = 0; id_step = 1;
 		} else if (dataset == "zipf") {
 			unit_size = 12, ts_offset = 4, elen = 4;

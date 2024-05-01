@@ -1,7 +1,7 @@
-#include "common.hpp"
+#include "../common/common.hpp"
 #pragma once
 #include "bloom_filter.hpp"
-#include "utils.hpp"
+#include "../common/utils.hpp"
 #include <iostream>
 
 class persistent_bf {

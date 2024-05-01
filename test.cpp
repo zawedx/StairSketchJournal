@@ -1,13 +1,4 @@
-#include "config.hpp"
-#include "utils.hpp"
-#include "file_reader.hpp"
-#include "stair_bf.hpp"
-#include "stair_cm.hpp"
-#include "stair_cu.hpp"
-#include "pbf.hpp"
-#include "hokusai.hpp"
-#include "adacm.hpp"
-#include "common.hpp"
+#include "impl_all.h"
 
 template<class Sketch>
 void build_sketch(Sketch *sketch) {
@@ -33,7 +24,31 @@ vector<tuple<int, int, int, int> > stair_config(int memory, int k) {
 		{ make_tuple(unit, 1, 1, 1) };
 
 	for (int i = 1; i <= k; ++i)
-		ds_config.push_back(make_tuple(unit * (1 << i) * (i == k ? 4 : 1), 2, i == k ? 4 : 1, 1 << (i-1)));
+		ds_config.push_back(make_tuple(
+			unit * (1 << i) * (i == k ? 4 : 1), 
+			2, 
+			i == k ? 4 : 1, 
+			1 << (i-1)
+		));
+	return ds_config;
+}
+
+vector<tuple<int, int, int, int> > stair_config_separate(int memory, int k) {
+	int sum = 0;
+	for (int i = 0; i <= k; ++i) 
+		sum += (1 << i); // * (i == k ? 4 : 1);
+
+	double unit = (double) memory / sum;
+	vector<tuple<int, int, int, int> > ds_config = 
+		{ make_tuple(unit, 1, 1, 1) };
+
+	for (int i = 1; i <= k; ++i)
+		ds_config.push_back(make_tuple(
+			unit * (1 << i), // * (i == k ? 4 : 1), 
+			1 << i, 
+			1, // i == k ? 4 : 1, 
+			1
+		));
 	return ds_config;
 }
 
@@ -61,6 +76,38 @@ stair_cm* build_scm(int memory, int level = 5) {
 	return new stair_cm(stair_config(memory, level));
 }
 
+stair_da* build_sda(int memory, int level = 5) {
+	return new stair_da(stair_config_separate(memory, level));
+}
+
+stair_hll* build_shll(int memory, int level = 5) {
+	return new stair_hll(stair_config_separate(memory, level));
+}
+
+stair_tower* build_stower(int memory, int level = 5) {
+	return new stair_tower(stair_config(memory, level));
+}
+
+stair_elastic* build_selastic(int memory, int level = 5) {
+	return new stair_elastic(stair_config_separate(memory, level));
+}
+
+item_aggregation_da* build_hda(int memory) {
+	return new item_aggregation_da(memory, 2, cfg.ds_win_num);
+}
+
+item_aggregation_hll* build_hhll(int memory) {
+	return new item_aggregation_hll(memory, 2, cfg.ds_win_num);
+}
+
+item_aggregation_tower* build_htower(int memory) {
+	return new item_aggregation_tower(memory, 2, cfg.ds_win_num);
+}
+
+item_aggregation_elastic* build_helastic(int memory) {
+	return new item_aggregation_elastic(memory, 2, cfg.ds_win_num);
+}
+
 item_aggregation_bf* build_iabf(int memory) {
 	return new item_aggregation_bf(memory, 2, cfg.ds_win_num);
 }
@@ -71,6 +118,18 @@ time_aggregation_bf* build_tabf(int memory, int lv_num) {
 
 ada_cm* build_adacm(int memory) {
 	return new ada_cm(memory, 2);
+}
+
+ada_da* build_adada(int memory) {
+	return new ada_da(memory, 2);
+}
+
+ada_elastic* build_adaelastic(int memory) {
+	return new ada_elastic(memory, 2);
+}
+
+ada_tower* build_adatower(int memory) {
+	return new ada_tower(memory, 2);
 }
 
 item_aggregation_cm* build_iacm(int memory) {
@@ -164,6 +223,118 @@ void cnt_test_are(Sketch *sketch, double *are) {
 			tot++;
 		}
 		are[i - start + 1] /= tot;
+	}
+}
+
+
+bool sortBySecondDesc(const std::pair<elem_t, int> &a, const std::pair<elem_t, int> &b) {
+    return a.second > b.second;
+}
+pair<elem_t, int>* map_to_topk(std::unordered_map<elem_t, int> &map, int k = 1000){
+	pair<elem_t, int>* result = new pair<elem_t, int>[k];
+	vector<pair<elem_t, int>> arr;
+	for (unordered_map<elem_t, int>::iterator it = map.begin(); it != map.end(); it++){
+		arr.push_back(make_pair(it->first, it->second));
+	}
+	sort(arr.begin(), arr.end(), sortBySecondDesc);
+	for (int i = 0; i < k; i++)
+		result[i] = arr[i];
+	return result;
+}
+pair<elem_t, int>* topklist_to_topk(pair<elem_t, int>** list_begin, pair<elem_t, int>** list_end, int k = 1000){
+	pair<elem_t, int>* result = new pair<elem_t, int>[k];
+	vector<pair<elem_t, int>> arr;
+	unordered_map<elem_t, int> freq, times;
+	for (pair<elem_t, int>** listptr = list_begin; listptr != list_end; listptr++){
+		pair<elem_t, int>* list = *listptr;
+		for (int i = 0; i < k; i++){
+			if (list[i].second == -1) continue;
+			freq[list[i].first];
+			times[list[i].first];
+			freq[list[i].first] += list[i].second;
+			times[list[i].first]++;
+		}
+	}
+	for (unordered_map<elem_t, int>::iterator it = freq.begin(); it != freq.end(); it++){
+		arr.push_back(make_pair(it->first, int(it->second / times[it->first])));
+	}
+	sort(arr.begin(), arr.end(), sortBySecondDesc);
+	for (int i = 0; i < k; i++)
+		if (i >= arr.size())
+			result[i] = make_pair((elem_t)0, (int)-1);
+		else 
+			result[i] = arr[i];
+	return result;
+}
+
+template<class Sketch>
+void topk_test_f1(Sketch *sketch, double *f1) {
+	build_sketch(sketch);
+	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
+	int start = cfg.win_num - cfg.ds_win_num + 1;
+	for (int i = start; i <= cfg.win_num; ++i) {
+		// compare topk
+		pair<elem_t, int> **answer_begin, **answer_end;
+		answer_begin = sketch->query_topk(answer_end, i); 
+		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
+		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
+		f1[i - start + 1] = calc_topk_F1(ground_truth, predict_result);
+		for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
+			delete[] *it;
+		delete[] answer_begin;
+		delete[] ground_truth;
+		delete[] predict_result;
+	}
+	delete sketch;
+}
+
+
+template<class Sketch>
+void topk_test_topkare(Sketch *sketch, double *are) {
+	build_sketch(sketch);
+	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
+	int start = cfg.win_num - cfg.ds_win_num + 1;
+	for (int i = start; i <= cfg.win_num; ++i) {
+		// compare topk
+		pair<elem_t, int> **answer_begin, **answer_end;
+		answer_begin = sketch->query_topk(answer_end, i); 
+		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
+		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
+		are[i - start + 1] = calc_topk_ARE(ground_truth, predict_result);
+		for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
+			delete[] *it;
+		delete[] answer_begin;
+		delete[] ground_truth;
+		delete[] predict_result;
+	}
+	delete sketch;
+}
+
+template<class Sketch>
+void topk_test_are(Sketch *sketch, double *are) {
+	build_sketch(sketch);
+	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
+	int start = cfg.win_num - cfg.ds_win_num + 1;
+	for (int i = start; i <= cfg.win_num; ++i) {
+		// compare topk
+		pair<elem_t, int> **answer_begin, **answer_end;
+		answer_begin = sketch->query_topk(answer_end, i); 
+		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
+		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
+		are[i - start + 1] = calc_topk_ARE(ground_truth, predict_result);
+	}
+}
+
+template<class Sketch>
+void cardinal_test_are(Sketch *sketch, double *are) {
+	build_sketch(sketch);
+	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
+	int start = cfg.win_num - cfg.ds_win_num + 1;
+	for (int i = start; i <= cfg.win_num; ++i) {
+		// compare topk
+		int ground_truth = win_set[i].size();
+		int predict_result = sketch->query(i); 
+		are[i - start + 1] = fabs(ground_truth - predict_result) / (double)ground_truth;
 	}
 }
 
@@ -284,6 +455,16 @@ double weighted_score(double *score) {
 	return ret;
 }
 
+double weighted_F1_score(double *F1_score) {
+	double ret = 0;
+	for (int i = 1; i <= cfg.ds_win_num; ++i) {
+		ret += (1 - F1_score[i]) / (cfg.ds_win_num - i + 1);
+		fprintf(stderr, "%.4f ", F1_score[i]);
+	}
+	fprintf(stderr, " %.4f\n", ret);
+	return ret;
+}
+
 template<class Sketch>
 double bf_test_wfpr(Sketch *s) {
 	double* fpr = new double[cfg.ds_win_num + 1];
@@ -291,10 +472,40 @@ double bf_test_wfpr(Sketch *s) {
 	return weighted_score(fpr);
 }
 
-template<class Sketch>
-double cnt_test_ware(Sketch *s) {
+double cnt_test_ware(framework *s) {
 	double* are = new double[cfg.ds_win_num + 1];
 	cnt_test_are(s, are);
+	return weighted_score(are);
+}
+// template<class Sketch>
+// double topk_test_wf1(Sketch *s) {
+// 	double* are = new double[cfg.ds_win_num + 1];
+// 	topk_test_f1(s, are);
+// 	return weighted_f1_score(are);
+// }
+
+double topk_test_wf1(framework *s) {
+	double* f1 = new double[cfg.ds_win_num + 1];
+	topk_test_f1(s, f1);
+	return weighted_F1_score(f1);
+}
+
+double topk_test_wtopkare(framework *s) {
+	double* are = new double[cfg.ds_win_num + 1];
+	topk_test_topkare(s, are);
+	return weighted_score(are);
+}
+
+template<class Sketch>
+double topk_test_ware(Sketch *s) {
+	double* are = new double[cfg.ds_win_num + 1];
+	topk_test_are(s, are);
+	return weighted_score(are);
+}
+
+double cardinal_test_ware(framework *s) {
+	double* are = new double[cfg.ds_win_num + 1];
+	cardinal_test_are(s, are);
 	return weighted_score(are);
 }
 

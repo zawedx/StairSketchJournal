@@ -2,7 +2,7 @@
 #include <cstring>
 #include <climits>
 #include <algorithm>
-#include "hash.hpp"
+#include "../common/hash.hpp"
 
 class cu_sketch {
 public:	

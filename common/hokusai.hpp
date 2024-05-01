@@ -1,7 +1,9 @@
 #pragma once
 #include "common.hpp"
-#include "bloom_filter.hpp"
-#include "cm_sketch.hpp"
+#include "../cmcubf/bloom_filter.hpp"
+#include "../cmcubf/cm_sketch.hpp"
+#include "../dasketch/da_sketch.hpp"
+#include "../hyperloglog/hll_sketch.hpp"
 #include "utils.hpp"
 #include <iostream>
 
@@ -214,6 +216,163 @@ public:
 private:
 	
 	int max_win_num, hf_num, cm0_memory;
+	int latest;
+	bool *shk;
+};
+
+class item_aggregation_da : public framework {
+public:
+	item_aggregation_da(int mem, int hf_num, int max_win_num) : max_win_num(max_win_num), hf_num(hf_num) {
+		da = new da_sketch*[max_win_num];
+		for (int i = 0; i < max_win_num; ++i)
+			da[i] = nullptr;
+		shk = new bool[max_win_num];
+		for (int i = 0; i < max_win_num; ++i) shk[i] = false;
+		for (int i = 1; (1 << i) <= max_win_num; ++i)
+			shk[(1<<i) - 1] = true;
+		double tot = 0; int cur = 1;
+		for (int i = 0; i < max_win_num; ++i) {
+			if (shk[i]) cur *= 2;
+			tot += 1.0 / cur;
+		}
+		
+		da0_memory = mem / tot;
+		da0_memory = da0_memory / cur / 8 * cur * 8;
+		latest = 0;
+	}
+
+	~item_aggregation_da() override {
+		for (int i = 0; i < max_win_num; ++i)
+			delete da[i];
+		delete[] da;
+		delete[] shk;
+	}
+
+	void new_window() {
+		latest++;
+		if (da[max_win_num - 1] != nullptr)
+			delete da[max_win_num - 1];
+		int cur = 2;
+		for (int i = max_win_num - 1; i >= 1; --i) {
+			da[i] = da[i-1];
+			if (da[i] && shk[i]) da[i]->shrink();
+		}
+		da[0] = new da_sketch(da0_memory, hf_num, 1);
+	}
+
+	void add(int wid, elem_t e, int delta = 1) override {
+		if (wid != latest) new_window();
+		da[0]->add(e, 0, delta);
+	}
+
+	int query(int wid, elem_t e) const override {
+		return da[latest - wid]->query(e, wid);
+	}
+
+	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const override {
+		pair<elem_t, int>** array_head = new pair<elem_t, int>*[2];
+		result = array_head;
+		*result = new pair<elem_t, int>[k];
+		da[latest - wid]->query_topk(*result, k);
+		++result;
+		return array_head;
+	}
+
+	int query_multiple_windows(int l, int r, elem_t e) const override {
+		int sum = 0;
+		for (int i = l; i <= r; ++i) sum += query(i, e);
+		return sum;
+	}
+
+	int memory() const override {
+		int mem_cnt = 0;
+		for (int i = 0; i < max_win_num; ++i)
+			if (da[i]) mem_cnt += da[i]->memory();
+		return mem_cnt;
+	}
+
+	long long qcnt() const override {
+		long long sum = 0;
+		for (int i = 0; i < max_win_num; ++i)
+			if (da[i]) sum += da[i]->qcnt();
+		return sum;
+	}
+	bool add_delta_implemented() const override { return false; }
+	da_sketch** da;
+private:
+	
+	int max_win_num, hf_num, da0_memory;
+	int latest;
+	bool *shk;
+};
+
+class item_aggregation_hll : public framework {
+public:
+	item_aggregation_hll(int mem, int hf_num, int max_win_num) : max_win_num(max_win_num), hf_num(hf_num) {
+		hll = new hll_sketch*[max_win_num];
+		for (int i = 0; i < max_win_num; ++i)
+			hll[i] = nullptr;
+		shk = new bool[max_win_num];
+		for (int i = 0; i < max_win_num; ++i) shk[i] = false;
+		for (int i = 1; (1 << i) <= max_win_num; ++i)
+			shk[(1<<i) - 1] = true;
+		double tot = 0; int cur = 1;
+		for (int i = 0; i < max_win_num; ++i) {
+			if (shk[i]) cur *= 2;
+			tot += 1.0 / cur;
+		}
+		
+		hll0_memory = mem / tot;
+		hll0_memory = hll0_memory / cur / 8 * cur * 8;
+		latest = 0;
+	}
+
+	~item_aggregation_hll() override {
+		for (int i = 0; i < max_win_num; ++i)
+			delete hll[i];
+		delete[] hll;
+		delete[] shk;
+	}
+
+	void new_window() {
+		latest++;
+		if (hll[max_win_num - 1] != nullptr)
+			delete hll[max_win_num - 1];
+		int cur = 2;
+		for (int i = max_win_num - 1; i >= 1; --i) {
+			hll[i] = hll[i-1];
+			if (hll[i] && shk[i]) hll[i]->shrink();
+		}
+		hll[0] = new hll_sketch(hll0_memory, hf_num, 1);
+	}
+
+	void add(int wid, elem_t e, int delta = 1) override {
+		if (wid != latest) new_window();
+		hll[0]->add(e, 0, delta);
+	}
+
+	int query(int wid) const override {
+		return hll[latest - wid]->query();
+	}
+
+	int memory() const override {
+		int mem_cnt = 0;
+		for (int i = 0; i < max_win_num; ++i)
+			if (hll[i]) mem_cnt += hll[i]->memory();
+		return mem_cnt;
+	}
+
+	long long qcnt() const override {
+		long long sum = 0;
+		for (int i = 0; i < max_win_num; ++i)
+			if (hll[i]) sum += hll[i]->qcnt();
+		return sum;
+	}
+	bool add_delta_implemented() const override { return false; }
+	hll_sketch** hll;
+private:
+	
+	int max_win_num, hf_num, hll0_memory;
 	int latest;
 	bool *shk;
 };

@@ -9,6 +9,8 @@ Implementation and experiments for Stair BF, Stair CM, Stair CU
 ```
 g++ main.cpp -o main -O2 -std=c++11
 ./main
+
+g++ main.cpp -o main -std=c++11 -g
 ```
 
 

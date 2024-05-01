@@ -1,7 +1,7 @@
 #pragma once
-#include "common.hpp"
-#include "hash.hpp"
-#include "utils.hpp"
+#include "../common/common.hpp"
+#include "../common/hash.hpp"
+#include "../common/utils.hpp"
 #include <iostream>
 
 class ada_cm {

@@ -285,3 +285,23 @@ private:
 };
 
 typedef base_hash_func<elem_t> hash_func;
+
+
+class ItemInfo{
+public:
+	elem_t id;
+	int w;
+	ItemInfo(elem_t _id, int _w){
+		id = _id;
+		w = _w;
+	}
+	ItemInfo(){
+		id = 0;
+		w = 0;
+	}
+	bool operator == (const ItemInfo& other){
+		return (id == other.id) && (w == other.w);
+	}
+};
+
+typedef base_hash_func<ItemInfo> hash_func_with_w;

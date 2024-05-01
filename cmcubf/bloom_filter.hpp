@@ -1,6 +1,6 @@
 #pragma once
-#include "common.hpp"
-#include "utils.hpp"
+#include "../common/common.hpp"
+#include "../common/utils.hpp"
 
 class bloom_filter {
 public:	
