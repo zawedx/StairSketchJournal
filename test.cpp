@@ -136,6 +136,50 @@ item_aggregation_cm* build_iacm(int memory) {
 	return new item_aggregation_cm(memory, 2, cfg.ds_win_num);
 }
 
+
+bool sortBySecondDesc(const std::pair<elem_t, int> &a, const std::pair<elem_t, int> &b) {
+    return a.second > b.second;
+}
+pair<elem_t, int>* map_to_topk(std::unordered_map<elem_t, int> &map, int k = 1000){
+	pair<elem_t, int>* result = new pair<elem_t, int>[k];
+	vector<pair<elem_t, int>> arr;
+	for (unordered_map<elem_t, int>::iterator it = map.begin(); it != map.end(); it++){
+		arr.push_back(make_pair(it->first, it->second));
+	}
+	sort(arr.begin(), arr.end(), sortBySecondDesc);
+	for (int i = 0; i < k; i++)
+		if (i >= arr.size())
+			result[i] = make_pair((elem_t)0, (int)-1);
+		else 
+			result[i] = arr[i];
+	return result;
+}
+pair<elem_t, int>* topklist_to_topk(pair<elem_t, int>** list_begin, pair<elem_t, int>** list_end, int k = 1000){
+	pair<elem_t, int>* result = new pair<elem_t, int>[k];
+	vector<pair<elem_t, int>> arr;
+	unordered_map<elem_t, int> freq, times;
+	for (pair<elem_t, int>** listptr = list_begin; listptr != list_end; listptr++){
+		pair<elem_t, int>* list = *listptr;
+		for (int i = 0; i < k; i++){
+			if (list[i].second == -1) continue;
+			freq[list[i].first];
+			times[list[i].first];
+			freq[list[i].first] += list[i].second;
+			times[list[i].first]++;
+		}
+	}
+	for (unordered_map<elem_t, int>::iterator it = freq.begin(); it != freq.end(); it++){
+		arr.push_back(make_pair(it->first, int(it->second / times[it->first])));
+	}
+	sort(arr.begin(), arr.end(), sortBySecondDesc);
+	for (int i = 0; i < k; i++)
+		if (i >= arr.size())
+			result[i] = make_pair((elem_t)0, (int)-1);
+		else 
+			result[i] = arr[i];
+	return result;
+}
+
 template<class Sketch>
 void bf_test_fpr(Sketch *sketch, double *fpr) {	
 	build_sketch(sketch);
@@ -184,6 +228,88 @@ void bf_test_multi_fpr(Sketch *sketch, double *fpr) {
 	delete[] tot;
 }
 
+void topk_test_stability_f1(framework *sketch, double *f1){
+	for (int i = 1; i <= cfg.win_num; ++i) {
+		if (sketch->add_delta_implemented()) {
+			for (int k = 0; k < elem_cnt; ++k)
+				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
+					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+		} else {
+			for (elem_t e : win_data[i]) sketch->add(i, e);
+		}
+
+		pair<elem_t, int> **answer_begin, **answer_end;
+		answer_begin = sketch->query_topk(answer_end, i); 
+		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
+		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
+		f1[i] = calc_topk_F1(ground_truth, predict_result);
+		for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
+			delete[] *it;
+		delete[] answer_begin;
+		delete[] ground_truth;
+		delete[] predict_result;
+	}
+}
+
+void topk_test_stability_are(framework *sketch, double *are){
+	for (int i = 1; i <= cfg.win_num; ++i) {
+		if (sketch->add_delta_implemented()) {
+			for (int k = 0; k < elem_cnt; ++k)
+				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
+					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+		} else {
+			for (elem_t e : win_data[i]) sketch->add(i, e);
+		}
+
+		pair<elem_t, int> **answer_begin, **answer_end;
+		answer_begin = sketch->query_topk(answer_end, i); 
+		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
+		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
+		are[i] = calc_topk_ARE(ground_truth, predict_result);
+		for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
+			delete[] *it;
+		delete[] answer_begin;
+		delete[] ground_truth;
+		delete[] predict_result;
+	}
+}
+
+void cardinal_test_stability_are(framework *sketch, double *are){
+	for (int i = 1; i <= cfg.win_num; ++i) {
+		if (sketch->add_delta_implemented()) {
+			for (int k = 0; k < elem_cnt; ++k)
+				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
+					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+		} else {
+			for (elem_t e : win_data[i]) sketch->add(i, e);
+		}
+
+		int ground_truth = win_set[i].size();
+		int predict_result = sketch->query(i); 
+		are[i] = fabs(ground_truth - predict_result) / (double)ground_truth;
+	}
+}
+
+void cnt_test_stability_are(framework *sketch, double *are){
+	for (int i = 1; i <= cfg.win_num; ++i) {
+		if (sketch->add_delta_implemented()) {
+			for (int k = 0; k < elem_cnt; ++k)
+				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
+					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+		} else {
+			for (elem_t e : win_data[i]) sketch->add(i, e);
+		}
+
+		int tot = 0; are[i] = 0;	
+		for (auto pr : win_set[i]) {
+			int real = pr.second, ans = sketch->query(i, pr.first);
+			are[i] += 1.0 * fabs(real - ans) / real;
+			tot++;
+		}
+		are[i] /= tot;
+	}
+}
+
 template<class Sketch>
 void bf_test_stability(Sketch *sketch, double *fpr) {
 	for (int i = 1; i <= cfg.win_num; ++i) {
@@ -210,8 +336,7 @@ void bf_test_stability(Sketch *sketch, double *fpr) {
 }
 
 
-template<class Sketch>
-void cnt_test_are(Sketch *sketch, double *are) {
+void cnt_test_are(framework *sketch, double *are) {
 	build_sketch(sketch);
 	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
 	int start = cfg.win_num - cfg.ds_win_num + 1;
@@ -226,49 +351,7 @@ void cnt_test_are(Sketch *sketch, double *are) {
 	}
 }
 
-
-bool sortBySecondDesc(const std::pair<elem_t, int> &a, const std::pair<elem_t, int> &b) {
-    return a.second > b.second;
-}
-pair<elem_t, int>* map_to_topk(std::unordered_map<elem_t, int> &map, int k = 1000){
-	pair<elem_t, int>* result = new pair<elem_t, int>[k];
-	vector<pair<elem_t, int>> arr;
-	for (unordered_map<elem_t, int>::iterator it = map.begin(); it != map.end(); it++){
-		arr.push_back(make_pair(it->first, it->second));
-	}
-	sort(arr.begin(), arr.end(), sortBySecondDesc);
-	for (int i = 0; i < k; i++)
-		result[i] = arr[i];
-	return result;
-}
-pair<elem_t, int>* topklist_to_topk(pair<elem_t, int>** list_begin, pair<elem_t, int>** list_end, int k = 1000){
-	pair<elem_t, int>* result = new pair<elem_t, int>[k];
-	vector<pair<elem_t, int>> arr;
-	unordered_map<elem_t, int> freq, times;
-	for (pair<elem_t, int>** listptr = list_begin; listptr != list_end; listptr++){
-		pair<elem_t, int>* list = *listptr;
-		for (int i = 0; i < k; i++){
-			if (list[i].second == -1) continue;
-			freq[list[i].first];
-			times[list[i].first];
-			freq[list[i].first] += list[i].second;
-			times[list[i].first]++;
-		}
-	}
-	for (unordered_map<elem_t, int>::iterator it = freq.begin(); it != freq.end(); it++){
-		arr.push_back(make_pair(it->first, int(it->second / times[it->first])));
-	}
-	sort(arr.begin(), arr.end(), sortBySecondDesc);
-	for (int i = 0; i < k; i++)
-		if (i >= arr.size())
-			result[i] = make_pair((elem_t)0, (int)-1);
-		else 
-			result[i] = arr[i];
-	return result;
-}
-
-template<class Sketch>
-void topk_test_f1(Sketch *sketch, double *f1) {
+void topk_test_f1(framework *sketch, double *f1) {
 	build_sketch(sketch);
 	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
 	int start = cfg.win_num - cfg.ds_win_num + 1;
@@ -285,12 +368,9 @@ void topk_test_f1(Sketch *sketch, double *f1) {
 		delete[] ground_truth;
 		delete[] predict_result;
 	}
-	delete sketch;
 }
 
-
-template<class Sketch>
-void topk_test_topkare(Sketch *sketch, double *are) {
+void topk_test_are(framework *sketch, double *are) {
 	build_sketch(sketch);
 	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
 	int start = cfg.win_num - cfg.ds_win_num + 1;
@@ -307,26 +387,9 @@ void topk_test_topkare(Sketch *sketch, double *are) {
 		delete[] ground_truth;
 		delete[] predict_result;
 	}
-	delete sketch;
 }
 
-template<class Sketch>
-void topk_test_are(Sketch *sketch, double *are) {
-	build_sketch(sketch);
-	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
-	int start = cfg.win_num - cfg.ds_win_num + 1;
-	for (int i = start; i <= cfg.win_num; ++i) {
-		// compare topk
-		pair<elem_t, int> **answer_begin, **answer_end;
-		answer_begin = sketch->query_topk(answer_end, i); 
-		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
-		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
-		are[i - start + 1] = calc_topk_ARE(ground_truth, predict_result);
-	}
-}
-
-template<class Sketch>
-void cardinal_test_are(Sketch *sketch, double *are) {
+void cardinal_test_are(framework *sketch, double *are) {
 	build_sketch(sketch);
 	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
 	int start = cfg.win_num - cfg.ds_win_num + 1;
@@ -490,14 +553,7 @@ double topk_test_wf1(framework *s) {
 	return weighted_F1_score(f1);
 }
 
-double topk_test_wtopkare(framework *s) {
-	double* are = new double[cfg.ds_win_num + 1];
-	topk_test_topkare(s, are);
-	return weighted_score(are);
-}
-
-template<class Sketch>
-double topk_test_ware(Sketch *s) {
+double topk_test_ware(framework *s) {
 	double* are = new double[cfg.ds_win_num + 1];
 	topk_test_are(s, are);
 	return weighted_score(are);
@@ -602,8 +658,8 @@ void bf_test_qcnt(Sketch *sketch, double *aqcnt) {
 	delete[] tot;
 }
 
-template<class Sketch>
-void cnt_test_qcnt(Sketch *sketch, double *aqcnt) {	
+// template<class Sketch>
+void cnt_test_qcnt(/*Sketch*/framework *sketch, double *aqcnt) {	
 	build_sketch(sketch);
 	int *tot = new int[cfg.ds_win_num + 1];
 	int start = cfg.win_num - cfg.ds_win_num;
@@ -612,6 +668,7 @@ void cnt_test_qcnt(Sketch *sketch, double *aqcnt) {
 	long long last = 0;
 
 	for (int l = 1; l <= cfg.ds_win_num; ++l) {
+		fprintf(stderr, "Testing l = %d / %d\n", l, cfg.ds_win_num);
 		for (int r = l; r <= cfg.ds_win_num; ++r) {
 			for (int k = 0; k < elem_cnt; ++k)
 				if (elems[k].cnt[start + r] > elems[k].cnt[start + l - 1]) {
@@ -627,4 +684,77 @@ void cnt_test_qcnt(Sketch *sketch, double *aqcnt) {
 
 	delete[] cnt;
 	delete[] tot;
+}
+
+void cnt_test_qcnt_se(framework *sketch, double *aqcnt) {	
+	build_sketch(sketch);
+	int *tot = new int[cfg.ds_win_num + 1];
+	int start = cfg.win_num - cfg.ds_win_num;
+	long long *cnt = new long long[cfg.ds_win_num + 1];
+	for (int i = 1; i <= cfg.ds_win_num; ++i) cnt[i] = tot[i] = 0;
+	long long last = 0;
+
+	for (int l = 1; l <= cfg.ds_win_num; ++l) {
+		for (int r = l; r <= cfg.ds_win_num; ++r) {
+			tot[r - l + 1]++;
+			long long last = sketch->qcnt();
+			sketch->query_multiple_windows(l, r, -1); // same qcnt for different element
+			cnt[r - l + 1] += sketch->qcnt() - last;
+		}
+	}
+	for (int i = 1; i <= cfg.ds_win_num; ++i)
+		aqcnt[i] = 1.0 * cnt[i] / tot[i];
+
+	delete[] cnt;
+	delete[] tot;
+}
+
+void topk_test_qcnt(framework *sketch, double *aqcnt) {	
+	build_sketch(sketch);
+	int *tot = new int[cfg.ds_win_num + 1];
+	int start = cfg.win_num - cfg.ds_win_num;
+	long long *cnt = new long long[cfg.ds_win_num + 1];
+	for (int i = 1; i <= cfg.ds_win_num; ++i) cnt[i] = tot[i] = 0;
+	long long last = 0;
+
+	for (int l = 1; l <= cfg.ds_win_num; ++l) {
+		for (int r = l; r <= cfg.ds_win_num; ++r) {
+			tot[r - l + 1]++;
+			long long last = sketch->qcnt();
+			pair<elem_t, int> **answer_begin, **answer_end;
+			answer_begin = sketch->query_multiple_windows_topk(answer_end, l, r);
+			cnt[r - l + 1] += sketch->qcnt() - last;
+		}
+	}
+	for (int i = 1; i <= cfg.ds_win_num; ++i)
+		aqcnt[i] = 1.0 * cnt[i] / tot[i];
+
+	delete[] cnt;
+	delete[] tot;
+}
+
+#include <chrono>
+using namespace std::chrono;
+using hrc = std::chrono::high_resolution_clock;
+double test_speed(framework *sketch) {	
+	int cnt = 0;
+	hrc::time_point t1 = hrc::now();
+	for (int i = 1; i <= cfg.ds_win_num; ++i)
+		for (elem_t e : win_data[i])
+			sketch->add(i, e), cnt++;
+	hrc::time_point t2 = hrc::now();
+	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+	return cnt / time_span.count();
+}
+
+template<class Sketch>
+double test_speed_old(Sketch *sketch) {	
+	int cnt = 0;
+	hrc::time_point t1 = hrc::now();
+	for (int i = 1; i <= cfg.ds_win_num; ++i)
+		for (elem_t e : win_data[i])
+			sketch->add(i, e), cnt++;
+	hrc::time_point t2 = hrc::now();
+	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+	return cnt / time_span.count();
 }

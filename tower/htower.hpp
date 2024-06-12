@@ -67,13 +67,14 @@ public:
 		return mem_cnt;
 	}
 
-	// long long qcnt() const {
-	// 	long long sum = 0;
-	// 	for (int i = 0; i < max_win_num; ++i)
-	// 		if (tower[i]) sum += tower[i]->qcnt();
-	// 	return sum;
-	// }
+	long long qcnt() const {
+		long long sum = 0;
+		for (int i = 0; i < max_win_num; ++i)
+			if (tower[i]) sum += tower[i]->qcnt();
+		return sum;
+	}
 	bool add_delta_implemented() const override { return false; }
+	string name() const override { return "HTower"; }
 	TowerSketch** tower;
 private:
 	

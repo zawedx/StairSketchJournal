@@ -14,7 +14,7 @@ public:
 	double win_time;
 	int memory;
 	/*
-		main.cpp line 332~336
+		main.cpp line 339~343
 		dataset:	CAIDA / zipf / webpage
 		win_num:	length of window
 		ds_win_num:	length of window (data selected as data points)

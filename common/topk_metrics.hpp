@@ -19,8 +19,9 @@ double calc_topk_F1(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *pre
     for (int i = 0; i < k; i++){
         int freq = predicted_map[ground_truth_topk[i].first];
 
-        hit += (freq != 0);
-        tot++;
+        hit += (freq > 0);
+        // tot++;
+        tot += (ground_truth_topk[i].second > 0);
         if (freq != 0){
             ARE += fabs(ground_truth_topk[i].second - freq) / (double)ground_truth_topk[i].second;
             AAE += fabs(ground_truth_topk[i].second - freq);
@@ -45,8 +46,9 @@ double calc_topk_ARE(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *pr
     for (int i = 0; i < k; i++){
         int freq = predicted_map[ground_truth_topk[i].first];
 
-        hit += (freq != 0);
-        tot++;
+        hit += (freq > 0);
+        // tot++;
+        tot += (ground_truth_topk[i].second > 0);
         if (freq != 0){
             ARE += fabs(ground_truth_topk[i].second - freq) / (double)ground_truth_topk[i].second;
             AAE += fabs(ground_truth_topk[i].second - freq);

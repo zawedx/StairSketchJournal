@@ -98,14 +98,14 @@ public:
 		}
 		return ret / valid_lv_number;
 	}
-	// int query_multiple_windows(int wid_start, int wid_end, elem_t e) const {
-	// 	int sum = 0;
-	// 	for (int i = 0; i < lv_num; ++i)
-	// 		lv[i]->notify(wid_start, wid_end);
-	// 	for (int wid = wid_start; wid <= wid_end; ++wid)
-	// 		sum += query(wid, e);
-	// 	return sum;
-	// }
+	int query_multiple_windows(int wid_start, int wid_end, elem_t e) const {
+		int sum = 0;
+		for (int i = 0; i < lv_num; ++i)
+			lv[i]->notify(wid_start, wid_end);
+		// for (int wid = wid_start; wid <= wid_end; ++wid)
+		// 	sum += query(wid);
+		return sum;
+	}
 	void add(int wid, elem_t e, int delta = 1) override {
 		if (wid != _last_wid) {
 			_last_wid = wid;
@@ -125,6 +125,7 @@ public:
 		return sum;
 	}
 	bool add_delta_implemented() const override { return false; }
+	string name() const override { return "SHLL"; }
 
 private:
 	stair_level_hll **lv;

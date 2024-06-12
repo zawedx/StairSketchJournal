@@ -22,6 +22,7 @@ public:
 		delete sketch;
 	}
 	
+	mutable long long _cnt;
     int bucket_number, bucket_length, item_num;
 	int total_memory;
 
@@ -47,12 +48,23 @@ public:
 		return array_head;
 	}
 
+	pair<elem_t, int>** pretend_query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const {
+		sketch->pretend_query_topk(*result, k);
+		return nullptr;
+	}
+
+	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = 1000) const override {
+		for (int i = wid_start; i <= wid_end; ++i) pretend_query_topk(result, i);
+		return nullptr; 
+	}
+
 	bool add_delta_implemented() const override { return false; }
 
 	int size() const { return -1; }
 	int memory() const override { return -1; }
 
-	long long qcnt() const override { return -1; }
+	long long qcnt() const override { return sketch->qcnt(); }
+	string name() const override { return "AdaElastic"; }
 
 private:
 };

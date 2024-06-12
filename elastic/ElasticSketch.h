@@ -11,6 +11,7 @@ class ElasticSketch
 {
     int bucket_num, tot_memory_in_bytes;
     int heavy_mem, light_mem;
+	mutable long long _cnt;
 
     HeavyPart *heavy_part;
     LightPart *light_part;
@@ -98,6 +99,7 @@ public:
 	}
 
     void query_topk(pair<elem_t, int>* &result, int wid, int k = 1000){
+        _cnt += hfn();
         vector<pair<elem_t, uint32_t> > all_possible_topk;
         prepare_topk(all_possible_topk, wid);
         sort(all_possible_topk.begin(), all_possible_topk.end(), greater_pair);
@@ -133,6 +135,10 @@ public:
         }
         return heavy_result;
     }
+	
+	void pretend_query_topk(pair<elem_t, int> *result, int k = 1000) const {
+		_cnt += hfn();
+	}
 
 
 	void shrink() {
@@ -175,8 +181,8 @@ public:
     // void compress(int ratio, uint8_t *dst) {    light_part->compress(ratio, dst); }
     int get_bucket_num() { return heavy_part->get_bucket_num(); }
     int memory() { return tot_memory_in_bytes; }
-    long long qcnt() const { return -1; }
-	int hfn() const { return -1; }
+    long long qcnt() const { return _cnt; }
+	int hfn() const { return ((MEMORY_ACCESS_ALL) ? 1 : bucket_num) + 1/* light part */; }
     // double get_bandwidth(int compress_ratio) 
     // {
     //     int result = heavy_part->get_memory_usage();

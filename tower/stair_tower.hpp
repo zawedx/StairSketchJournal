@@ -38,13 +38,22 @@ public:
 		return INT_MAX;
 	}
 
+	void notify(int l, int r) const {
+		for (int i = 0; i < tower_num; ++i)
+			if (!(l > intv[i].r || r < intv[i].l))
+				_cnt += 2 * tower[i]->hfn();
+	}
+
 	int memory() const {
 		int mem = 0;
 		// for (int i = 0; i < tower_num; ++i) mem += tower[i]->memory();todo
 		return mem;
 	}
 
+	long long qcnt() const { return _cnt; }
+
 private:
+	mutable long long _cnt;
 	TowerSketch **tower;
 	const int refresh_freq;
 	const int tower_num;
@@ -86,8 +95,10 @@ public:
 	}
 	int query_multiple_windows(int wid_start, int wid_end, elem_t e) const override {
 		int sum = 0;
-		for (int wid = wid_start; wid <= wid_end; ++wid)
-			sum += query(wid, e);
+		for (int i = 0; i < lv_num; ++i)
+			lv[i]->notify(wid_start, wid_end);
+		// for (int wid = wid_start; wid <= wid_end; ++wid)
+		// 	sum += query(wid, e);
 		return sum;
 	}
 	void add(int wid, elem_t e, int delta = 1) override {
@@ -103,7 +114,13 @@ public:
 		return mem;
 	}
 	bool add_delta_implemented() const override { return false; }
+	string name() const override { return "STower"; }
 
+	long long qcnt() const {
+		long long sum = 0;
+		for (int i = 0; i < lv_num; ++i) sum += lv[i]->qcnt();
+		return sum;
+	}
 private:
 	stair_level_tower **lv;
 	const int lv_num;

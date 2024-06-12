@@ -54,7 +54,8 @@ public:
 	int size() const { return n; }
 	int memory() const override { return n * 4 * d; }
 
-	long long qcnt() const override { return _cnt; }
+	long long qcnt() const override { return sketch->qcnt(); }
+	string name() const override { return "AdaTower"; }
 
 private:
 	mutable long long _cnt;

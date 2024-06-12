@@ -39,6 +39,7 @@ public:
 	int pool_number, pool_size;
 	hash_func poolid_hf, hll_hf;
 	HLLT lowbit_table[37];
+	mutable long long _cnt;
 
 	void add(elem_t e, int offset = 0, int delta = 1) {
 		// offset no use, all element in same sketch share same offset
@@ -82,6 +83,7 @@ public:
 	}
 
 	int query() {
+		_cnt += hfn();
 		int result = 0;
 		for (int i = 0; i < pool_number; i++)
 			result += query_pool(i);
@@ -118,7 +120,7 @@ public:
 	int size() const { return -1; }
 	int memory() const { return total_memory; }
 
-	long long qcnt() const { return -1; } //_cnt; }
+	long long qcnt() const { return _cnt; }
 	// double usage() const { return 1.0 * counter / n; }
-	int hfn() const { return -1; }
+	int hfn() const { return (MEMORY_ACCESS_ALL) ? 1 : pool_number * pool_size; }
 };

@@ -44,3 +44,11 @@ char* concatenate(const T1& val1, const T2& val2) {
     std::memcpy(result + size1, &val2, size2);
     return result;
 }
+
+#define MEMORY_ACCESS_ALL 0
+
+void delete_topk_result(pair<elem_t, int>** answer_begin, pair<elem_t, int>** answer_end){
+	for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
+		delete[] *it;
+	delete[] answer_begin;
+}

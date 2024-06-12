@@ -25,11 +25,13 @@ public:
 			item[i] = item_arr + i * bucket_length;
 		memset(item_arr, 0, sizeof(Item) * item_num);
 		
+		_cnt = 0;
 	}
 	
 	double heavy_rate, cons, alpha;
     int bucket_number, bucket_length, item_num;
 	int total_memory;
+	mutable long long _cnt;
 
 	class Item{
 	public:
@@ -110,6 +112,8 @@ public:
 	}
 
 	void query_topk(pair<elem_t, int> *result, int k = 1000) const {
+		_cnt += once_qcnt();
+
 		Query_Item* query_item = new Query_Item[bucket_number * bucket_length];
 
 		for (int i = 0; i < bucket_number; i++){
@@ -133,6 +137,10 @@ public:
 		
 		delete(query_item);
 	}
+	
+	void pretend_query_topk(pair<elem_t, int> *result, int k = 1000) const {
+		_cnt += once_qcnt();
+	}
 
 	void shrink() {
 		assert(bucket_number % 2 == 0);
@@ -154,6 +162,10 @@ public:
 				new_item[i][j] = *it1;
 				light_part->add(it2->id, 0, it2->underest);
 			}
+		delete[] item_arr;
+		delete[] item;
+		item_arr = new_item_arr;
+		item = new_item;
 		light_part->shrink();
 	}
 
@@ -165,7 +177,8 @@ public:
 	int size() const { return total_memory / 4; }
 	int memory() const { return total_memory; }
 
-	long long qcnt() const { return 100; } //_cnt; } // to be fixed
+	long long qcnt() const { return _cnt; }
+	long long once_qcnt() const { return ((MEMORY_ACCESS_ALL == 1) ? 1 : bucket_number * bucket_length) + light_part->hfn(); }
 	// double usage() const { return 1.0 * counter / n; }
 	int hfn() const { return light_part->hfn(); }
 };

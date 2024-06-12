@@ -73,30 +73,37 @@ void output_line(const char* name, double *arr, FILE *fp, int n = cfg.ds_win_num
 	fflush(fp);
 }
 
+void output_line(string name, double *arr, FILE *fp, int n = cfg.ds_win_num) {
+	fprintf(fp, "%s,", name.c_str());
+	for (int i = 1; i <= n; ++i)
+		fprintf(fp, "%.6f%c", arr[i], i == n ? '\n' : ',');
+	fflush(fp);
+}
+
 int MB(int n) { return n * 1024 * 1024; }
 
-// template<class sketch> void test1(const char* name, sketch *sk, double *fpr, FILE *fp) {
-// 	bf_test_fpr(sk, fpr);
-// 	output_line(name, fpr, fp);
-// }
+template<class sketch> void test1(const char* name, sketch *sk, double *fpr, FILE *fp) {
+	bf_test_fpr(sk, fpr);
+	output_line(name, fpr, fp);
+}
 
-// void figure1(const char* file_name) {
-// 	initialize();
-// 	FILE *fp = fopen(file_name, "w");
-// 	double *fpr = new double[cfg.win_num + 1];
+void figure1(const char* file_name) {
+	initialize();
+	FILE *fp = fopen(file_name, "w");
+	double *fpr = new double[cfg.win_num + 1];
 
-// 	fprintf(fp, "window id,");
-// 	for (int i = 1; i <= cfg.win_num; ++i)
-// 		fprintf(fp, "%d,", i);
-// 	fprintf(fp, "\n");
+	fprintf(fp, "window id,");
+	for (int i = 1; i <= cfg.win_num; ++i)
+		fprintf(fp, "%d,", i);
+	fprintf(fp, "\n");
 
-// 	test1("sbf",  build_sbf(cfg.memory, 5),  fpr, fp);
-// 	test1("pbf",  build_pbf(cfg.memory),  fpr, fp);
-// 	test1("iabf", build_iabf(cfg.memory), fpr, fp);
+	test1("sbf",  build_sbf(cfg.memory, 5),  fpr, fp);
+	test1("pbf",  build_pbf(cfg.memory),  fpr, fp);
+	test1("iabf", build_iabf(cfg.memory), fpr, fp);
 
-// 	fclose(fp);
-// 	delete[] fpr;
-// }
+	fclose(fp);
+	delete[] fpr;
+}
 
 // void figure1_1() {
 // 	cfg = config("CAIDA", 32, 32, 60, MB(10));
@@ -113,27 +120,27 @@ int MB(int n) { return n * 1024 * 1024; }
 // 	figure1("figure1_3.csv");
 // }
 
-// void figure2(const char* file_name) {
-// 	initialize();
-// 	FILE *fp = fopen(file_name, "w");
-// 	double *fpr = new double[cfg.win_num + 1];
+void figure2(const char* file_name) {
+	initialize();
+	FILE *fp = fopen(file_name, "w");
+	double *fpr = new double[cfg.win_num + 1];
 
-// 	fprintf(fp, "window id,");
-// 	for (int i = 1; i <= cfg.win_num; ++i)
-// 		fprintf(fp, "%d,", i);
-// 	fprintf(fp, "\n");
+	fprintf(fp, "window id,");
+	for (int i = 1; i <= cfg.win_num; ++i)
+		fprintf(fp, "%d,", i);
+	fprintf(fp, "\n");
 
-// 	bf_test_stability(build_sbf(cfg.memory), fpr);
-// 	output_line("sbf", fpr, fp, cfg.win_num);
+	bf_test_stability(build_sbf(cfg.memory), fpr);
+	output_line("sbf", fpr, fp, cfg.win_num);
 
-// 	bf_test_stability(build_pbf(cfg.memory), fpr);
-// 	output_line("pbf", fpr, fp, cfg.win_num);
+	bf_test_stability(build_pbf(cfg.memory), fpr);
+	output_line("pbf", fpr, fp, cfg.win_num);
 	
-// 	bf_test_stability(build_iabf(cfg.memory), fpr);
-// 	output_line("iabf", fpr, fp, cfg.win_num);
+	bf_test_stability(build_iabf(cfg.memory), fpr);
+	output_line("iabf", fpr, fp, cfg.win_num);
 
-// 	fclose(fp);
-// }
+	fclose(fp);
+}
 
 // void figure2_1() {
 // 	cfg = config("CAIDA", 16, 8, 60, MB(6));
@@ -226,18 +233,18 @@ int MB(int n) { return n * 1024 * 1024; }
 // 	figure4("figure4_3.csv");
 // }
 
-// void figure5(const char* file_name, int m_begin, int m_end, int m_step) {
-// 	FILE *fp = fopen(file_name, "w");
-// 	initialize();
-// 	fprintf(fp, "Memory(MB),SBF,PBF,IABF\n");
-// 	for (int mem = m_begin; mem <= m_end; mem += m_step) {
-// 		cfg.memory = mem;
-// 		fprintf(fp, "%d,%.6f,%.6f,%.6f\n", mem/1024/1024, bf_test_wfpr(build_sbf(mem, 5)),
-// 			bf_test_wfpr(build_pbf(mem)), bf_test_wfpr(build_iabf(mem)));
-// 		fflush(fp);
-// 	}
-// 	fclose(fp);
-// }
+void figure5(const char* file_name, int m_begin, int m_end, int m_step) {
+	FILE *fp = fopen(file_name, "w");
+	initialize();
+	fprintf(fp, "Memory(MB),SBF,PBF,IABF\n");
+	for (int mem = m_begin; mem <= m_end; mem += m_step) {
+		cfg.memory = mem;
+		fprintf(fp, "%d,%.6f,%.6f,%.6f\n", mem/1024/1024, bf_test_wfpr(build_sbf(mem, 5)),
+			bf_test_wfpr(build_pbf(mem)), bf_test_wfpr(build_iabf(mem)));
+		fflush(fp);
+	}
+	fclose(fp);
+}
 
 // void figure5_1() {
 // 	cfg = config("CAIDA", 8, 8, 60, MB(2));
@@ -312,23 +319,23 @@ int MB(int n) { return n * 1024 * 1024; }
 // 	figure7("figure7_3.csv", MB(40), MB(80), MB(5));
 // }
 
-// void figure8_1() {
-// 	FILE *fp = fopen("figure8_1.csv", "w");
-// 	const int mem = MB(20);
-// 	cfg = config("CAIDA", 8, 8, 60, mem);
-// 	fprintf(fp, "Window Num,SBF,PBF,IABF\n");
-// 	for (int k = 3; k <= 8; ++k) {
-// 		int win = 1 << k;
-// 		cfg.ds_win_num = win;
-// 		cfg.win_num = win;
-// 		cfg.win_time = 480.0 / cfg.win_num;
-// 		initialize_win_num_test();
-// 		fprintf(fp, "%d,%.6f,%.6f,%.6f\n", win, bf_test_win_num_wfpr(build_sbf(mem, k)), 
-// 			bf_test_win_num_wfpr(build_pbf(mem)), bf_test_win_num_wfpr(build_iabf(mem)));
-// 		fflush(fp);
-// 	}
-// 	fclose(fp);
-// }
+void figure8_1(const char* file_name) {
+	FILE *fp = fopen(file_name, "w");
+	const int mem = MB(20);
+	cfg = config("CAIDA", 8, 8, 60, mem);
+	fprintf(fp, "Window Num,SBF,PBF,IABF\n");
+	for (int k = 3; k <= 8; ++k) {
+		int win = 1 << k;
+		cfg.ds_win_num = win;
+		cfg.win_num = win;
+		cfg.win_time = 480.0 / cfg.win_num;
+		initialize_win_num_test();
+		fprintf(fp, "%d,%.6f,%.6f,%.6f\n", win, bf_test_win_num_wfpr(build_sbf(mem, k)), 
+			bf_test_win_num_wfpr(build_pbf(mem)), bf_test_win_num_wfpr(build_iabf(mem)));
+		fflush(fp);
+	}
+	fclose(fp);
+}
 
 // void figure8_2() {
 // 	FILE *fp = fopen("figure8_2.csv", "w");
@@ -372,19 +379,19 @@ int MB(int n) { return n * 1024 * 1024; }
 // 	fclose(fp);
 // }
 
-// void figure9_1() {
-// 	FILE *fp = fopen("figure9_1.csv", "w");
-// 	int mem = 10*1024*1024;
-// 	cfg = config("CAIDA", 8, 8, 60, mem);
-// 	fprintf(fp, "Window Time(s),SCM,SBF,PBF,IABF\n");
-// 	for (int tim = 10; tim <= 60; tim += 10) {
-// 		initialize(true, tim);
-// 		fprintf(fp, "%d,%.6f,%.6f,%.6f\n", tim, bf_test_wfpr(build_sbf(mem)),
-// 			bf_test_wfpr(build_pbf(mem)), bf_test_wfpr(build_iabf(mem)));
-// 		fflush(fp);
-// 	}
-// 	fclose(fp);
-// }
+void figure9_1(const char* file_name) {
+	FILE *fp = fopen(file_name, "w");
+	int mem = 10*1024*1024;
+	cfg = config("CAIDA", 8, 8, 60, mem);
+	fprintf(fp, "Window Time(s),SCM,SBF,PBF,IABF\n");
+	for (int tim = 10; tim <= 60; tim += 10) {
+		initialize(true, tim);
+		fprintf(fp, "%d,%.6f,%.6f,%.6f\n", tim, bf_test_wfpr(build_sbf(mem)),
+			bf_test_wfpr(build_pbf(mem)), bf_test_wfpr(build_iabf(mem)));
+		fflush(fp);
+	}
+	fclose(fp);
+}
 
 // void figure9_2() {
 // 	FILE *fp = fopen("figure9_2.csv", "w");
@@ -501,33 +508,34 @@ int MB(int n) { return n * 1024 * 1024; }
 // 	fclose(fp);
 // }
 
-// void figure11_1() {
-// 	cfg = config("CAIDA", 32, 32, 30, 15*1024*1024);
+void figure11_1(const char* file_name) {
+	// cfg = config("CAIDA", 32, 32, 30, 15*1024*1024);
 	
-// 	initialize(true);
-// 	FILE *fp = fopen("figure11_1.csv", "w");
-// 	double *qcnt = new double[cfg.win_num + 1];
-// 	fprintf(stderr, "read complete\n");
+	initialize(true);
+	// FILE *fp = fopen("figure11_1.csv", "w");
+	FILE *fp = fopen(file_name, "w");
+	double *qcnt = new double[cfg.win_num + 1];
+	fprintf(stderr, "read complete\n");
 
-// 	fprintf(fp, "window id,");
-// 	for (int i = 1; i <= cfg.win_num; ++i)
-// 		fprintf(fp, "%d,", i);
-// 	fprintf(fp, "\n");
+	fprintf(fp, "window id,");
+	for (int i = 1; i <= cfg.win_num; ++i)
+		fprintf(fp, "%d,", i);
+	fprintf(fp, "\n");
 
-// 	bf_test_qcnt(build_sbf(cfg.memory,5), qcnt);
-// 	output_line("sbf", qcnt, fp);
+	bf_test_qcnt(build_sbf(cfg.memory,5), qcnt);
+	output_line("sbf", qcnt, fp);
 
-// 	bf_test_qcnt(build_pbf(cfg.memory), qcnt);
-// 	output_line("pbf", qcnt, fp);
+	bf_test_qcnt(build_pbf(cfg.memory), qcnt);
+	output_line("pbf", qcnt, fp);
 	
-// 	bf_test_qcnt(build_iabf(cfg.memory), qcnt);
-// 	output_line("iabf", qcnt, fp);
+	bf_test_qcnt(build_iabf(cfg.memory), qcnt);
+	output_line("iabf", qcnt, fp);
 
-// 	fclose(fp);
-// }
+	fclose(fp);
+}
 
 // void figure11_2() {
-// 	cfg = config("CAIDA", 32, 32, 1, 120*1024*1024);
+// 	cfg = config("webpage", 16, 16, 1, 120*1024*1024);
 // 	initialize(true);
 // 	FILE *fp = fopen("figure11_2.csv", "w");
 	
@@ -556,16 +564,167 @@ void DASketchFigure();
 void HLLFigure();
 void ElasticFigure();
 void TowerFigure();
+void BloomFilter();
+void TestErrorGradualness();
+void TestTimeStability();
+void TestAMA();
 
 int main() {
 	srand(1214);
 	
 	cfg = config("webpage", 32, 32, 60, MB(4));
+	// TestErrorGradualness();
+	// TestTimeStability();
 	// DASketchFigure();
-	HLLFigure();
+	// HLLFigure();
 	// ElasticFigure();
 	// TowerFigure();
+	BloomFilter();
+	// TestAMA();
 	return 0;
+}
+
+void Newfigure_memory_fixed(const char* file_name, 
+	function<void(framework*, double*)> test_function, 
+	const vector<std::function<framework*(int)>>& build_function){
+	
+	FILE *fp = fopen(file_name, "w");
+	initialize(true);
+	
+	double *qcnt = new double[cfg.win_num + 1];
+
+	fprintf(fp, "window id,");
+	for (int i = 1; i <= cfg.ds_win_num; ++i)
+		fprintf(fp, "%d,", i);
+	fprintf(fp, "\n");
+
+	for (int i = 0; i < build_function.size(); i++){
+		framework *sketch = build_function[i](cfg.memory);
+		test_function(sketch, qcnt);
+		output_line(sketch->name(), qcnt, fp);
+		delete sketch;
+	}
+	fclose(fp);
+	delete[] qcnt;
+}
+
+void TestErrorGradualness(){
+	cfg = config("webpage", 32, 32, 60, MB(120));
+	// // DA
+	// cfg.memory = MB(120);
+	// vector<function<framework*(int)> > all_framwork;
+	// all_framwork.push_back([](int memory){ return build_sda(memory); });
+	// all_framwork.push_back(build_hda);
+	// all_framwork.push_back(build_adada);
+
+	// Newfigure_memory_fixed("2_1_1_DA_f1.csv",topk_test_f1,all_framwork);
+	// Newfigure_memory_fixed("2_1_1_DA_ARE.csv",topk_test_are,all_framwork);
+	// // HLL
+	// cfg.memory = MB(15);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_shll(memory); });
+	// all_framwork.push_back(build_hhll);
+
+	// Newfigure_memory_fixed("3_1_1_Hyperloglog_ARE.csv",cardinal_test_are,all_framwork);
+	// // Elastic
+	// cfg.memory = MB(120);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_selastic(memory); });
+	// all_framwork.push_back(build_helastic);
+	// all_framwork.push_back(build_adaelastic);
+
+	// Newfigure_memory_fixed("2_1_1_Elastic_f1.csv",topk_test_f1,all_framwork);
+	// Newfigure_memory_fixed("2_1_1_Elastic_ARE.csv",topk_test_are,all_framwork);
+	// // Tower
+	// cfg.memory = MB(120);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_stower(memory); });
+	// all_framwork.push_back(build_htower);
+	// all_framwork.push_back(build_adatower);
+
+	// Newfigure_memory_fixed("1_1_1_Tower_ARE.csv",cnt_test_are,all_framwork);
+	// BF
+	cfg.memory = MB(4);
+	figure1("4_1_1_BF_fpr.csv");
+}
+
+void TestTimeStability(){
+	cfg = config("webpage", 32, 32, 60, MB(120));
+	// // DA
+	// cfg.memory = MB(120);
+	// vector<function<framework*(int)> > all_framwork;
+	// all_framwork.push_back([](int memory){ return build_sda(memory); });
+	// all_framwork.push_back(build_hda);
+	// all_framwork.push_back(build_adada);
+
+	// Newfigure_memory_fixed("2_1_2_DA_f1.csv",topk_test_stability_f1,all_framwork);
+	// Newfigure_memory_fixed("2_1_2_DA_ARE.csv",topk_test_stability_are,all_framwork);
+	// // HLL
+	// cfg.memory = MB(15);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_shll(memory); });
+	// all_framwork.push_back(build_hhll);
+
+	// Newfigure_memory_fixed("3_1_2_Hyperloglog_ARE.csv",cardinal_test_stability_are,all_framwork);
+	// // Elastic
+	// cfg.memory = MB(120);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_selastic(memory); });
+	// all_framwork.push_back(build_helastic);
+	// all_framwork.push_back(build_adaelastic);
+
+	// Newfigure_memory_fixed("2_1_2_Elastic_f1.csv",topk_test_stability_f1,all_framwork);
+	// Newfigure_memory_fixed("2_1_2_Elastic_ARE.csv",topk_test_stability_are,all_framwork);
+	// // Tower
+	// cfg.memory = MB(120);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_stower(memory); });
+	// all_framwork.push_back(build_htower);
+	// all_framwork.push_back(build_adatower);
+
+	// Newfigure_memory_fixed("1_1_2_Tower_ARE.csv",cnt_test_stability_are,all_framwork);
+	// BF
+	// cfg = config("webpage", 16, 8, 60, MB(2));
+	cfg.memory = MB(2);
+	figure2("4_1_2_BF_fpr.csv");
+}
+
+void TestAMA(){
+	cfg = config("webpage", 32, 32, 60, MB(120));
+	// // DA
+	// cfg.memory = MB(120);
+	// vector<function<framework*(int)> > all_framwork;
+	// all_framwork.push_back([](int memory){ return build_sda(memory); });
+	// all_framwork.push_back(build_hda);
+	// all_framwork.push_back(build_adada);
+
+	// Newfigure_memory_fixed("2_3_1_DA_AMA.csv",topk_test_qcnt,all_framwork);
+	// // HLL
+	// cfg.memory = MB(15);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_shll(memory); });
+	// all_framwork.push_back(build_hhll);
+
+	// Newfigure_memory_fixed("3_3_1_Hyperloglog_AMA.csv",cnt_test_qcnt_se,all_framwork);
+	// // Elastic
+	// cfg.memory = MB(120);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_selastic(memory); });
+	// all_framwork.push_back(build_helastic);
+	// all_framwork.push_back(build_adaelastic);
+
+	// Newfigure_memory_fixed("2_3_1_Elastic_AMA.csv",topk_test_qcnt,all_framwork);
+	// // Tower
+	// cfg.memory = MB(120);
+	// all_framwork.clear();
+	// all_framwork.push_back([](int memory){ return build_stower(memory); });
+	// all_framwork.push_back(build_htower);
+	// all_framwork.push_back(build_adatower);
+
+	// Newfigure_memory_fixed("1_3_1_Tower_AMA.csv",cnt_test_qcnt_se,all_framwork);
+	// BF
+	cfg.memory = MB(15);
+	figure11_1("4_3_1_BF_AMA.csv");
 }
 
 void Newfigure(const char* file_name, const char* csv_first_line, int m_begin, int m_end, int m_step, 
@@ -578,8 +737,12 @@ void Newfigure(const char* file_name, const char* csv_first_line, int m_begin, i
 	for (int mem = m_begin; mem <= m_end; mem += m_step) {
 		cfg.memory = mem;
 		fprintf(fp, "%d", mem/1024/1024);
-		for (int i = 0; i < build_function.size(); i++)
-			fprintf(fp, ",%.6f", test_function(build_function[i](mem)));
+		for (int i = 0; i < build_function.size(); i++){
+			// fprintf(fp, ",%.6f", test_function(build_function[i](mem)));
+			framework *sketch = build_function[i](mem);
+			fprintf(fp, ",%.6f", test_function(sketch));
+			delete sketch;
+		}
 		fprintf(fp, "\n");
 		fflush(fp);
 	}
@@ -592,10 +755,12 @@ void DASketchFigure(){
 	all_dasketch_framwork.push_back([](int memory){ return build_sda(memory); });
 	all_dasketch_framwork.push_back(build_hda);
 	all_dasketch_framwork.push_back(build_adada);
-	Newfigure("Newfigure1_1.csv","Memory(MB),SDA,HDA,AdaDA\n",
+	Newfigure("2_2_DA_WF1.csv","Memory(MB),SDA,HDA,AdaDA\n",
 		MB(5), MB(30), MB(5), topk_test_wf1, all_dasketch_framwork);
-	Newfigure("Newfigure1_2.csv","Memory(MB),SDA,HDA,AdaDA\n",
-		MB(5), MB(30), MB(5), topk_test_wtopkare, all_dasketch_framwork);
+	Newfigure("2_2_DA_WARE.csv","Memory(MB),SDA,HDA,AdaDA\n",
+		MB(5), MB(30), MB(5), topk_test_ware, all_dasketch_framwork);
+	Newfigure("2_3_2_DA_throughput.csv","Memory(MB),SDA,HDA,AdaDA\n",
+		MB(120), MB(120), MB(5), test_speed, all_dasketch_framwork);
 }
 
 
@@ -603,8 +768,10 @@ void HLLFigure(){
 	vector<function<framework*(int)> > all_hll_framwork;
 	all_hll_framwork.push_back([](int memory){ return build_shll(memory); });
 	all_hll_framwork.push_back(build_hhll);
-	Newfigure("Newfigure2_1.csv","Memory(MB),SHLL,HHLL\n",
+	Newfigure("3_2_Hyperloglog_WARE.csv","Memory(MB),SHLL,HHLL\n",
 		MB(1), MB(5), MB(1), cardinal_test_ware, all_hll_framwork);
+	Newfigure("3_3_2_Hyperloglog_throughput.csv","Memory(MB),SHLL,HHLL\n",
+		MB(15), MB(15), MB(5), test_speed, all_hll_framwork);
 }
 
 
@@ -613,10 +780,12 @@ void ElasticFigure(){
 	all_elastic_framwork.push_back([](int memory){ return build_selastic(memory); });
 	all_elastic_framwork.push_back(build_helastic);
 	all_elastic_framwork.push_back(build_adaelastic);
-	Newfigure("Newfigure3_1.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
-		MB(5), MB(30), MB(5), topk_test_wf1, all_elastic_framwork);
-	Newfigure("Newfigure3_2.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
-		MB(5), MB(30), MB(5), topk_test_wtopkare, all_elastic_framwork);
+	Newfigure("2_2_Elastic_WF1.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
+		MB(20), MB(40), MB(10), topk_test_wf1, all_elastic_framwork);
+	Newfigure("2_2_Elastic_WARE.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
+		MB(5), MB(30), MB(5), topk_test_ware, all_elastic_framwork);
+	Newfigure("2_3_2_Elastic_throughput.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
+		MB(120), MB(120), MB(5), test_speed, all_elastic_framwork);
 }
 
 
@@ -625,6 +794,33 @@ void TowerFigure(){
 	all_tower_framwork.push_back([](int memory){ return build_stower(memory); });
 	all_tower_framwork.push_back(build_htower);
 	all_tower_framwork.push_back(build_adatower);
-	Newfigure("Newfigure4_1.csv","Memory(MB),STower,HTower,AdaTower\n",
+	Newfigure("1_2_Tower_WARE.csv","Memory(MB),STower,HTower,AdaTower\n",
 		MB(5), MB(30), MB(5), cnt_test_ware, all_tower_framwork);
+	Newfigure("1_3_2_Tower_throughput.csv","Memory(MB),STower,HTower,AdaTower\n",
+		MB(120), MB(120), MB(5), test_speed, all_tower_framwork);
+}
+
+void BloomFilter(){
+	figure5("4_2_BF_wfpr_memory.csv", MB(2), MB(16), MB(2));
+	cfg.memory = MB(20);
+	figure8_1("4_2_BF_wfpr_time_period.csv");
+	cfg.memory = MB(10);
+	figure9_1("4_2_BF_wfpr_query_length.csv");
+	// bf_test_wfpr
+	// bf_test_multi_fpr
+	// bf_test_win_num_wfpr
+	// test_speed_old
+	FILE *fp = fopen("4_3_2_BF_throughput.csv", "w");
+	initialize(true);
+	fprintf(fp, "Memory(MB),STower,HTower,AdaTower\n");
+
+	cfg.memory = MB(15);
+	fprintf(fp, "%d", cfg.memory/1024/1024);
+	fprintf(fp, ",%.6f", test_speed_old(build_sbf(cfg.memory)));
+	fprintf(fp, ",%.6f", test_speed_old(build_pbf(cfg.memory)));
+	fprintf(fp, ",%.6f", test_speed_old(build_iabf(cfg.memory)));
+	fprintf(fp, "\n");
+	
+	fflush(fp);
+	fclose(fp);
 }

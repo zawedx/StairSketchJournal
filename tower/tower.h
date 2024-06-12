@@ -12,6 +12,7 @@
 class TowerSketch
 {
 public:
+	mutable long long _cnt;
     uint32_t w[d];
     uint32_t *A[d];
     uint32_t hashseed[d];
@@ -80,6 +81,7 @@ public:
 
     uint32_t query(const char *key, uint16_t key_len)
     {
+        _cnt += d;
         uint32_t ret = UINT32_MAX;
         for (int i = 0; i < d; ++i)
         {
@@ -113,6 +115,9 @@ public:
             A[i] = new_A;
         }
 	}
+
+	long long qcnt() const { return _cnt; }
+	long long hfn() const { return d; }
 };
 
 class TowerSketchCU : public TowerSketch

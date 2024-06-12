@@ -27,6 +27,7 @@ public:
 			item[i] = item_arr + i * bucket_length;
 		memset(item_arr, 0, sizeof(Item) * item_num);
 		
+		_cnt = 0;
 	}
 
 	~ada_da() override {
@@ -38,6 +39,7 @@ public:
 	double heavy_rate, cons, alpha;
     int bucket_number, bucket_length, item_num;
 	int total_memory;
+	mutable long long _cnt;
 
 	class Item{
 	public:
@@ -125,6 +127,9 @@ public:
 	}
 
 	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const override {
+		if (MEMORY_ACCESS_ALL == 1) _cnt += 1;
+		else _cnt += bucket_number * bucket_length;
+		
 		pair<elem_t, int>** array_head = new pair<elem_t, int>*[2];
 		result = array_head;
 		*result = new pair<elem_t, int>[k];
@@ -133,7 +138,7 @@ public:
 		for (int i = 0; i < bucket_number; i++)
 			for (int j = 0; j < bucket_length; j++){
 				if (item[i][j].id.w == wid){
-					all_possible_topk.push_back(make_pair(item[i][j].id.id, item[i][j].store_unbiased));
+					all_possible_topk.push_back(make_pair(item[i][j].id.id, item[i][j].underest + item[i][j].store_unbiased));
 				}
 			}
 		sort(all_possible_topk.begin(), all_possible_topk.end(), greater_pair);
@@ -143,12 +148,23 @@ public:
 		return array_head;
 	}
 
+	pair<elem_t, int>** pretend_query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const {
+		_cnt += ((MEMORY_ACCESS_ALL == 1) ? 1 : bucket_number * bucket_length) + light_part->hfn();
+		return nullptr;
+	}
+
+	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = 1000) const override {
+		for (int i = wid_start; i <= wid_end; ++i) pretend_query_topk(result, i);
+		return nullptr; 
+	}
+
 	bool add_delta_implemented() const override { return false; }
 
 	int size() const { return -1; }
 	int memory() const override { return -1; }
 
-	long long qcnt() const override { return -1; }
+	long long qcnt() const override { return _cnt; }
+	string name() const override { return "AdaDA"; }
 
 private:
 };

@@ -128,6 +128,10 @@ public:
 		bucket_num /= 2;
 		for (int i = bucket_num; i < 2 * bucket_num; i++)
 			shrink_kick.push_back(buckets[i]);
+		Bucket *new_buckets = new Bucket[bucket_num];
+		// memcpy(new_buckets, buckets, sizeof(Bucket) * bucket_num);
+		// delete[] buckets;
+		// buckets = new_buckets;
 	}
 
 

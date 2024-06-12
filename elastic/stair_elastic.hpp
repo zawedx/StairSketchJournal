@@ -62,7 +62,7 @@ public:
 	void notify(int l, int r) const {
 		for (int i = 0; i < elastic_num; ++i)
 			if (!(l > intv[i].r || r < intv[i].l))
-				_cnt += 2 * elastic[i]->hfn();
+				_cnt += elastic[i]->hfn();
 	}
 
 	int memory() const {
@@ -123,14 +123,11 @@ public:
 			lv[i]->query_topk(result, wid, k);
 		return array_head;
 	}
-	
-	int query_multiple_windows(int wid_start, int wid_end, elem_t e) const override {
-		int sum = 0;
+
+	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = 1000) const override {
 		for (int i = 0; i < lv_num; ++i)
 			lv[i]->notify(wid_start, wid_end);
-		for (int wid = wid_start; wid <= wid_end; ++wid)
-			sum += query(wid, e);
-		return sum;
+		return nullptr; 
 	}
 	
 	void add(int wid, elem_t e, int delta = 1) override {
@@ -154,6 +151,7 @@ public:
 	}
 
 	bool add_delta_implemented() const override { return false; }
+	string name() const override { return "SElastic"; }
 
 private:
 	stair_level_elastic **lv;
