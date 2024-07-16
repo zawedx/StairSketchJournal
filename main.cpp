@@ -578,8 +578,8 @@ vector<function<framework*(int)> > all_tower_framwork;
 vector<function<framework*(int)> > all_cmcu_framwork;
 void prepare_all_framework(){
 	// DA
-	all_dasketch_framwork.push_back([](int memory){ return build_sda(memory); });
-	all_dasketch_framwork.push_back(build_hda);
+	// all_dasketch_framwork.push_back([](int memory){ return build_sda(memory); });
+	// all_dasketch_framwork.push_back(build_hda);
 	all_dasketch_framwork.push_back(build_adada);
 	// HLL
 	all_hll_framwork.push_back([](int memory){ return build_shll(memory); });
@@ -921,14 +921,14 @@ void Newfigure(const char* file_name, const char* csv_first_line, int m_begin, i
 
 
 void DASketchFigure(){
-	Newfigure("rb.csv","Memory(MB),SDA,HDA,AdaDA\n",
-		MB(1), MB(1), MB(50), ada_test_diff_window_f1, all_dasketch_framwork);
-	// Newfigure("2_2_DA_WF1.csv","Memory(MB),SDA,HDA,AdaDA\n",
-	// 	MB(50), MB(100), MB(10), topk_test_wf1, all_dasketch_framwork);
-	// Newfigure("2_2_DA_WARE.csv","Memory(MB),SDA,HDA,AdaDA\n",
-	// 	MB(50), MB(100), MB(10), topk_test_ware, all_dasketch_framwork);
-	// Newfigure("2_3_2_DA_throughput.csv","Memory(MB),SDA,HDA,AdaDA\n",
-	// 	MB(120), MB(120), MB(5), test_speed, all_dasketch_framwork);
+	// Newfigure("rb.csv","Memory(MB),SDA,HDA,AdaDA\n",
+	// 	MB(50), MB(100), MB(10), ada_test_diff_window_f1, all_dasketch_framwork);
+	Newfigure("2_2_DA_WF1.csv","Memory(MB),SDA,HDA,AdaDA\n",
+		MB(50), MB(100), MB(10), topk_test_wf1, all_dasketch_framwork);
+	Newfigure("2_2_DA_WARE.csv","Memory(MB),SDA,HDA,AdaDA\n",
+		MB(50), MB(100), MB(10), topk_test_ware, all_dasketch_framwork);
+	Newfigure("2_3_2_DA_throughput.csv","Memory(MB),SDA,HDA,AdaDA\n",
+		MB(120), MB(120), MB(5), test_speed, all_dasketch_framwork);
 }
 
 
