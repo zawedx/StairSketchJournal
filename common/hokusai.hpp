@@ -150,7 +150,7 @@ private:
 	int latest, unit_mem;
 };
 
-class item_aggregation_cm {
+class item_aggregation_cm : public framework {
 public:
 	item_aggregation_cm(int mem, int hf_num, int max_win_num) : max_win_num(max_win_num), hf_num(hf_num) {
 		cm = new cm_sketch*[max_win_num];
@@ -171,6 +171,13 @@ public:
 		latest = 0;
 	}
 
+	~item_aggregation_cm() override {
+		for (int i = 0; i < max_win_num; ++i)
+			if (cm[i] != nullptr) delete cm[i];
+		delete[] cm;
+		delete[] shk;
+	}
+
 	void new_window() {
 		latest++;
 		if (cm[max_win_num - 1] != nullptr)
@@ -183,35 +190,36 @@ public:
 		cm[0] = new cm_sketch(cm0_memory, hf_num);
 	}
 
-	void add(int wid, elem_t e, int delta = 1) {
+	void add(int wid, elem_t e, int delta = 1) override {
 		if (wid != latest) new_window();
 		cm[0]->add(e, wid, delta);
 	}
 
-	int query(int wid, elem_t e) {
+	int query(int wid, elem_t e) const override {
 		return cm[latest - wid]->query(e, wid);
 	}
 
-	int query_multiple_windows(int l, int r, elem_t e) {
+	int query_multiple_windows(int l, int r, elem_t e) const override {
 		int sum = 0;
 		for (int i = l; i <= r; ++i) sum += query(i, e);
 		return sum;
 	}
 
-	int memory() const {
+	int memory() const override {
 		int mem_cnt = 0;
 		for (int i = 0; i < max_win_num; ++i)
 			if (cm[i]) mem_cnt += cm[i]->memory();
 		return mem_cnt;
 	}
 
-	long long qcnt() const {
+	long long qcnt() const override {
 		long long sum = 0;
 		for (int i = 0; i < max_win_num; ++i)
 			if (cm[i]) sum += cm[i]->qcnt();
 		return sum;
 	}
-	bool add_delta_implemented() const { return true; }
+	bool add_delta_implemented() const override { return true; }
+	string name() const override { return "HCM"; }
 	cm_sketch** cm;
 private:
 	
@@ -269,7 +277,7 @@ public:
 		return da[latest - wid]->query(e, wid);
 	}
 
-	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const override {
+	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const override {
 		pair<elem_t, int>** array_head = new pair<elem_t, int>*[2];
 		result = array_head;
 		*result = new pair<elem_t, int>[k];
@@ -278,12 +286,12 @@ public:
 		return array_head;
 	}
 
-	pair<elem_t, int>** pretend_query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const {
+	pair<elem_t, int>** pretend_query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const {
 		da[latest - wid]->pretend_query_topk(*result, k);
 		return nullptr;
 	}
 
-	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = 1000) const override {
+	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = TOP_K) const override {
 		for (int i = wid_start; i <= wid_end; ++i) pretend_query_topk(result, i);
 		return nullptr; 
 	}

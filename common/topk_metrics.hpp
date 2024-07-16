@@ -7,8 +7,9 @@
 
 using namespace std;
 
-double calc_topk_F1(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *predicted_topk, int k = 1000){
+double calc_topk_F1(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *predicted_topk, int k = TOP_K){
     unordered_map<int, int> predicted_map;
+    predicted_map.clear();
     for (int i = 0; i < k; i++){
         predicted_map[predicted_topk[i].first] = predicted_topk[i].second;
     }
@@ -32,9 +33,10 @@ double calc_topk_F1(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *pre
 }
 
 
-double calc_topk_ARE(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *predicted_topk, int k = 1000){
+double calc_topk_ARE(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *predicted_topk, int k = TOP_K){
     // unordered_map<int, int> ground_truth_map;
     unordered_map<int, int> predicted_map;
+    predicted_map.clear();
     for (int i = 0; i < k; i++){
         // ground_truth_map[ground_truth_topk[i].first] = ground_truth_topk[i].second;
         predicted_map[predicted_topk[i].first] = predicted_topk[i].second;
@@ -49,14 +51,17 @@ double calc_topk_ARE(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *pr
         hit += (freq > 0);
         // tot++;
         tot += (ground_truth_topk[i].second > 0);
-        if (freq != 0){
+        if (freq > 0){
             ARE += fabs(ground_truth_topk[i].second - freq) / (double)ground_truth_topk[i].second;
             AAE += fabs(ground_truth_topk[i].second - freq);
+        } else {
+            ARE += fabs(ground_truth_topk[i].second - 0) / (double)ground_truth_topk[i].second;
+            AAE += fabs(ground_truth_topk[i].second - 0);
         }
     }
     
     // return (double)hit / (double)tot;
-    return ARE / (double)hit;
+    return ARE / (double)tot;
 
     // avg_F1 += (double)hit / (double)tot;
     // avg_ARE += ARE / (double)hit;

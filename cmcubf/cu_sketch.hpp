@@ -13,6 +13,10 @@ public:
 		counter = 0;
 	}
 
+	~cu_sketch(){
+		delete[] pool;
+	}
+
 	void add(elem_t e, int offset, int minv) {
 		for (int i = 0; i < hf_num; ++i) {
 			int idx = (hf[i](e) + offset) % n;

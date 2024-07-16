@@ -41,10 +41,12 @@ public:
 /* insertion */
 	void insert(int wid, uint8_t *key, int f = 1)
 	{
+		char *conc_result = concatenate(wid, *((elem_t*)key));
 		uint32_t hash_val = (uint32_t)bobhash->run(
-			(const char*)concatenate(wid, *((elem_t*)key)),
+			(const char*)conc_result,
 			sizeof(int) + KEY_LENGTH
 		);
+		delete[] conc_result;
 		uint32_t pos = hash_val % (uint32_t)counter_num;
 
 		int old_val = (int)counters[pos];
@@ -59,10 +61,12 @@ public:
 
 	void swap_insert(int wid, uint8_t *key, int f)
 	{
+		char *conc_result = concatenate(wid, *((elem_t*)key));
 		uint32_t hash_val = (uint32_t)bobhash->run(
-			(const char*)concatenate(wid, *((elem_t*)key)),
+			(const char*)conc_result,
 			sizeof(int) + KEY_LENGTH
 		);
+		delete[] conc_result;
 		uint32_t pos = hash_val % (uint32_t)counter_num;
 
         f = f < 255 ? f : 255;
@@ -87,10 +91,12 @@ public:
 
 	int query(int wid, uint8_t *key) 
 	{
+		char *conc_result = concatenate(wid, *((elem_t*)key));
 		uint32_t hash_val = (uint32_t)bobhash->run(
-			(const char*)concatenate(wid, *((elem_t*)key)),
+			(const char*)conc_result,
 			sizeof(int) + KEY_LENGTH
 		);
+		delete[] conc_result;
         uint32_t pos = hash_val % (uint32_t)counter_num;
 
         return (int)counters[pos];

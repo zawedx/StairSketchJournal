@@ -16,6 +16,13 @@ public:
 		cur = 0; idx = 0;
 	}
 
+	~stair_level_cm(){
+		for (int i = 0; i < cm_num; ++i)
+			delete cm[i];
+		delete[] intv;
+		delete[] cm;
+	}
+
 	void add_window() {
 		if (cur % refresh_freq == 0 && cur != 0) {
 			idx = (idx + 1) % cm_num;
@@ -63,7 +70,7 @@ private:
 	interval* intv;
 };
 
-class stair_cm {
+class stair_cm : public framework {
 public:
 
 	/*
@@ -81,13 +88,19 @@ public:
 		_last_wid = -1;
 	}
 
-	int query(int wid, elem_t e) const {
+	~stair_cm() override {
+		for (int i = 0; i < lv_num; ++i)
+			delete lv[i];
+		delete[] lv;
+	}
+
+	int query(int wid, elem_t e) const override {
 		int ret = INT_MAX;
 		for (int i = 0; i < lv_num; ++i)
 			ret = min(ret, lv[i]->query(wid, e));
 		return ret;
 	}
-	int query_multiple_windows(int wid_start, int wid_end, elem_t e) const {
+	int query_multiple_windows(int wid_start, int wid_end, elem_t e) const override {
 		int sum = 0;
 		for (int i = 0; i < lv_num; ++i)
 			lv[i]->notify(wid_start, wid_end);
@@ -95,25 +108,26 @@ public:
 			sum += query(wid, e);
 		return sum;
 	}
-	void add(int wid, elem_t e, int delta = 1) {
+	void add(int wid, elem_t e, int delta = 1) override {
 		if (wid != _last_wid) {
 			_last_wid = wid;
 			for (int i = 0; i < lv_num; ++i) lv[i]->add_window();
 		}
 		for (int i = 0; i < lv_num; ++i) lv[i]->add(e, delta);
 	}
-	int memory() const {
+	int memory() const override {
 		int mem = 0;
 		for (int i = 0; i < lv_num; ++i) mem += lv[i]->memory();
 		return mem;
 	}
 
-	int qcnt() const {
+	long long qcnt() const override {
 		int sum = 0;
 		for (int i = 0; i < lv_num; ++i) sum += lv[i]->qcnt();
 		return sum;
 	}
-	bool add_delta_implemented() const { return true; }
+	bool add_delta_implemented() const override { return true; }
+	string name() const override { return "SCM"; }
 
 private:
 	stair_level_cm **lv;

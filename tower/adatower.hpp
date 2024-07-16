@@ -29,16 +29,16 @@ public:
 	 * @param delta The number of copies (of e) to add
 	 */
 	void add(int wid, elem_t e, int delta = 1) override {
-		char *new_key = concatenate(wid, e);
-		uint16_t key_len = sizeof(int) + sizeof(elem_t);
-		sketch->insert(new_key, key_len, delta * wid);
+		char *new_key = convert(e);
+		uint16_t key_len = sizeof(elem_t);
+		sketch->insert(new_key, key_len, delta * wid, wid);
 		delete[] new_key;
 	}
 
 	int query(int wid, elem_t e) const override {
-		char *new_key = concatenate(wid, e);
-		uint16_t key_len = sizeof(int) + sizeof(elem_t);
-		int res = sketch->query(new_key, key_len);
+		char *new_key = convert(e);
+		uint16_t key_len = sizeof(elem_t);
+		int res = sketch->query(new_key, key_len, wid);
 		delete[] new_key;
 		return res / wid;
 	}

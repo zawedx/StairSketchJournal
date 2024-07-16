@@ -48,16 +48,16 @@ public:
     }
 
 	void insert(int wid, elem_t e, int delta = 1) {
-		char *new_key = convert(e);
-		uint16_t key_len = sizeof(elem_t);
-		insert(new_key, key_len, delta, wid);
+		char *new_key = concatenate(wid, e);
+		uint16_t key_len = sizeof(int) + sizeof(elem_t);
+		insert(new_key, key_len, delta);
 		delete[] new_key;
 	}
 
-    virtual uint32_t insert(const char *key, uint16_t key_len, uint32_t delta, int wid)
+    virtual uint32_t insert(const char *key, uint16_t key_len, uint32_t delta = 1)
     {
         for (int i = 0; i < d; ++i)
-            idx[i] = (MurmurHash3_x86_32(key, key_len, hashseed[i]) % w[i] + wid) % w[i];
+            idx[i] = MurmurHash3_x86_32(key, key_len, hashseed[i]) % w[i];
 
         uint32_t ret = UINT32_MAX;
         for (int i = 0; i < d; ++i)
@@ -72,20 +72,20 @@ public:
     }
 
 	uint32_t query(int wid, elem_t e) {
-		char *new_key = convert(e);
-		uint16_t key_len = sizeof(elem_t);
-		uint32_t result = query(new_key, key_len, wid);
+		char *new_key = concatenate(wid, e);
+		uint16_t key_len = sizeof(int) + sizeof(elem_t);
+		uint32_t result = query(new_key, key_len);
 		delete[] new_key;
         return result;
 	}
 
-    uint32_t query(const char *key, uint16_t key_len, int wid)
+    uint32_t query(const char *key, uint16_t key_len)
     {
         _cnt += d;
         uint32_t ret = UINT32_MAX;
         for (int i = 0; i < d; ++i)
         {
-            uint32_t idx = (MurmurHash3_x86_32(key, key_len, hashseed[i]) % w[i] + wid) % w[i];
+            uint32_t idx = MurmurHash3_x86_32(key, key_len, hashseed[i]) % w[i];
             uint32_t a = A[i][idx >> cpw[i]];
             uint32_t shift = (idx & lo[i]) << cs[i];
             uint32_t val = (a >> shift) & mask[i];

@@ -81,7 +81,7 @@ public:
 
 		for (j = 0; j < bucket_length; j++){
 			if ((item[h_id][j].id == e_with_w) && (item[h_id][j].underest >= 1)){
-				item[h_id][j].cnt += delta;
+				item[h_id][j].cnt += delta * wid;
 				item[h_id][j].underest += delta;
 				return;
 			}
@@ -98,15 +98,14 @@ public:
 		for (j = 0; j < bucket_length; j++){
 			if (item[h_id][j].cnt == 0){
 				item[h_id][j].id = e_with_w;
-				item[h_id][j].cnt = delta;
+				item[h_id][j].cnt = delta * wid;
 				item[h_id][j].underest = delta;
 				item[h_id][j].store_unbiased = light_part->query(e, offset, 1) / wid;
 				item[h_id][j].store_overest = light_part->query(e, offset, 0) / wid;
 				return;
 			}
 		}
-
-		if(rand() % 100000 < alpha * 100000 *  1. / (double)(item[h_id][arg_min].cnt + 1)){
+		if(rand() % 100000 < alpha * 100000 * (delta * wid) *  1. / (double)(item[h_id][arg_min].cnt + 1)){
 			light_part->add(
 				item[h_id][arg_min].id.id, 
 				item[h_id][arg_min].id.w, 
@@ -116,6 +115,7 @@ public:
 			item[h_id][arg_min].store_unbiased = light_part->query(e, offset, 1) / wid;
 			item[h_id][arg_min].store_overest = light_part->query(e, offset, 0) / wid;
 			item[h_id][arg_min].id = e_with_w;
+			item[h_id][arg_min].cnt += delta * wid;
 		}
 		else{
 			light_part->add(e, offset, delta * wid);
@@ -126,7 +126,7 @@ public:
 		return x.second > y.second;
 	}
 
-	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const override {
+	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const override {
 		if (MEMORY_ACCESS_ALL == 1) _cnt += 1;
 		else _cnt += bucket_number * bucket_length;
 		
@@ -142,18 +142,23 @@ public:
 				}
 			}
 		sort(all_possible_topk.begin(), all_possible_topk.end(), greater_pair);
-		for (int i = 0; i < k; i++)
-			result[0][i] = all_possible_topk[i];
+		// assert(all_possible_topk.size() >= k);
+		for (int i = 0; i < k; i++){
+			if (i < all_possible_topk.size())
+				result[0][i] = all_possible_topk[i];
+			else
+				result[0][i] = make_pair(elem_t(0), -1);
+		}
 		++result;
 		return array_head;
 	}
 
-	pair<elem_t, int>** pretend_query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const {
+	pair<elem_t, int>** pretend_query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const {
 		_cnt += ((MEMORY_ACCESS_ALL == 1) ? 1 : bucket_number * bucket_length) + light_part->hfn();
 		return nullptr;
 	}
 
-	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = 1000) const override {
+	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = TOP_K) const override {
 		for (int i = wid_start; i <= wid_end; ++i) pretend_query_topk(result, i);
 		return nullptr; 
 	}
@@ -165,6 +170,20 @@ public:
 
 	long long qcnt() const override { return _cnt; }
 	string name() const override { return "AdaDA"; }
+	// string name() const override { 
+	// 	for (int wid = 1; wid <= 32; wid++){
+	// 		int cnt = 0;
+	// 		for (int i = 0; i < bucket_number; i++)
+	// 			for (int j = 0; j < bucket_length; j++){
+	// 				if (item[i][j].id.w == wid){
+	// 					cnt++;
+	// 				}
+	// 			}
+	// 		printf("%d, ", cnt);
+	// 	}
+	// 	printf("\n");
+	// 	return ""; 
+	// }
 
 private:
 };

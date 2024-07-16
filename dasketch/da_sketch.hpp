@@ -27,6 +27,12 @@ public:
 		
 		_cnt = 0;
 	}
+
+	~da_sketch(){
+		delete[] item_arr;
+		delete[] item;
+		delete light_part;
+	}
 	
 	double heavy_rate, cons, alpha;
     int bucket_number, bucket_length, item_num;
@@ -111,7 +117,7 @@ public:
 		return -1;
 	}
 
-	void query_topk(pair<elem_t, int> *result, int k = 1000) const {
+	void query_topk(pair<elem_t, int> *result, int k = TOP_K) const {
 		_cnt += once_qcnt();
 
 		Query_Item* query_item = new Query_Item[bucket_number * bucket_length];
@@ -132,13 +138,13 @@ public:
 			result[i] = make_pair(it.id, it.underest + it.store_unbiased);
 		}
 		for (int i = item_num; i < k; i++){
-			result[i] = make_pair(elem_t(rand()), -1);
+			result[i] = make_pair(elem_t(0), -1);
 		}
 		
-		delete(query_item);
+		delete[] query_item;
 	}
 	
-	void pretend_query_topk(pair<elem_t, int> *result, int k = 1000) const {
+	void pretend_query_topk(pair<elem_t, int> *result, int k = TOP_K) const {
 		_cnt += once_qcnt();
 	}
 

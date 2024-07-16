@@ -16,6 +16,13 @@ public:
 		cur = 0; idx = 0;
 	}
 
+	~stair_level_tower(){
+		for (int i = 0; i < tower_num; ++i)
+			delete tower[i];
+		delete[] intv;
+		delete[] tower;
+	}
+
 	void add_window() {
 		if (cur % refresh_freq == 0 && cur != 0) {
 			idx = (idx + 1) % tower_num;

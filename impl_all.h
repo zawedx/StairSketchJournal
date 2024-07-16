@@ -1,6 +1,7 @@
 #pragma once
 // common
 #include "common/common.hpp"
+#include "common/framework.h"
 #include "common/config.hpp"
 #include "common/utils.hpp"
 #include "common/file_reader.hpp"

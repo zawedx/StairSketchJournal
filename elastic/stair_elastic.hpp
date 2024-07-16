@@ -51,7 +51,7 @@ public:
 		return INT_MAX;
 	}
 	
-	void query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const {
+	void query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const {
 		for (int i = 0; i < elastic_num; ++i) 
 			if (intv[i].l <= wid && wid <= intv[i].r){
 				elastic[i]->query_topk(result[0], wid - 1, k);
@@ -116,7 +116,7 @@ public:
 		return ret;
 	}
 
-	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const override {
+	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const override {
 		pair<elem_t, int>** array_head = new pair<elem_t, int>*[2 << lv_num];
 		result = array_head;
 		for (int i = 0; i < lv_num; ++i)
@@ -124,7 +124,7 @@ public:
 		return array_head;
 	}
 
-	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = 1000) const override {
+	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = TOP_K) const override {
 		for (int i = 0; i < lv_num; ++i)
 			lv[i]->notify(wid_start, wid_end);
 		return nullptr; 

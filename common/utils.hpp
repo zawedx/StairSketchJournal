@@ -61,6 +61,11 @@ public:
 	elem_desc *hmap[MOD];
 	unsigned char len[MOD];
 
+	// ~HashMap(){
+	// 	for (int i = 0; i < MOD; i++)
+	// 		if (hmap[i] != nullptr) delete[] hmap[i];
+	// }
+
 	bool add(int i, elem_t e) {
 		
 		int idx = hf(e) % MOD;

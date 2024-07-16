@@ -140,7 +140,7 @@ item_aggregation_cm* build_iacm(int memory) {
 bool sortBySecondDesc(const std::pair<elem_t, int> &a, const std::pair<elem_t, int> &b) {
     return a.second > b.second;
 }
-pair<elem_t, int>* map_to_topk(std::unordered_map<elem_t, int> &map, int k = 1000){
+pair<elem_t, int>* map_to_topk(std::unordered_map<elem_t, int> &map, int k = TOP_K){
 	pair<elem_t, int>* result = new pair<elem_t, int>[k];
 	vector<pair<elem_t, int>> arr;
 	for (unordered_map<elem_t, int>::iterator it = map.begin(); it != map.end(); it++){
@@ -154,7 +154,7 @@ pair<elem_t, int>* map_to_topk(std::unordered_map<elem_t, int> &map, int k = 100
 			result[i] = arr[i];
 	return result;
 }
-pair<elem_t, int>* topklist_to_topk(pair<elem_t, int>** list_begin, pair<elem_t, int>** list_end, int k = 1000){
+pair<elem_t, int>* topklist_to_topk(pair<elem_t, int>** list_begin, pair<elem_t, int>** list_end, int k = TOP_K){
 	pair<elem_t, int>* result = new pair<elem_t, int>[k];
 	vector<pair<elem_t, int>> arr;
 	unordered_map<elem_t, int> freq, times;
@@ -550,19 +550,25 @@ double cnt_test_ware(framework *s) {
 double topk_test_wf1(framework *s) {
 	double* f1 = new double[cfg.ds_win_num + 1];
 	topk_test_f1(s, f1);
-	return weighted_F1_score(f1);
+	double result = weighted_F1_score(f1);
+	delete[] f1;
+	return result;
 }
 
 double topk_test_ware(framework *s) {
 	double* are = new double[cfg.ds_win_num + 1];
 	topk_test_are(s, are);
-	return weighted_score(are);
+	double result = weighted_score(are);
+	delete[] are;
+	return result;
 }
 
 double cardinal_test_ware(framework *s) {
 	double* are = new double[cfg.ds_win_num + 1];
 	cardinal_test_are(s, are);
-	return weighted_score(are);
+	double return_value = weighted_score(are);
+	delete[] are;
+	return return_value;
 }
 
 template<class Sketch>
@@ -757,4 +763,62 @@ double test_speed_old(Sketch *sketch) {
 	hrc::time_point t2 = hrc::now();
 	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 	return cnt / time_span.count();
+}
+
+
+
+void ada_test_diff_window_are(framework *sketch, double *are){
+	for (int i = 1; i <= cfg.win_num; ++i) {
+		if (sketch->add_delta_implemented()) {
+			for (int k = 0; k < elem_cnt; ++k)
+				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
+					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+		} else {
+			for (elem_t e : win_data[i]) sketch->add(i, e);
+		}
+
+		for (int j = 1; j <= i; j++){
+			int tot = 0; are[j] = 0;
+			for (auto pr : win_set[j]) {
+				int real = pr.second, ans = sketch->query(j, pr.first);
+				are[j] += 1.0 * fabs(real - ans) / real;
+				tot++;
+			}
+			are[j] /= tot;
+		}
+		for (int j = 1; j <= i; j++) printf("%.6f,", are[j]);
+		printf("\n");
+	}
+}
+
+
+double ada_test_diff_window_f1(framework *sketch){
+	double f1[40];
+	for (int i = 1; i <= cfg.win_num; ++i) {
+		if (sketch->add_delta_implemented()) {
+			for (int k = 0; k < elem_cnt; ++k)
+				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
+					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+		} else {
+			for (elem_t e : win_data[i]) sketch->add(i, e);
+		}
+
+		sketch->name();
+
+		for (int j = 1; j <= i; j++){
+			pair<elem_t, int> **answer_begin, **answer_end;
+			answer_begin = sketch->query_topk(answer_end, j); 
+			pair<elem_t, int>* ground_truth = map_to_topk(win_set[j]);
+			pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
+			f1[j] = calc_topk_F1(ground_truth, predict_result);
+			for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
+				delete[] *it;
+			delete[] answer_begin;
+			delete[] ground_truth;
+			delete[] predict_result;
+		}
+		for (int j = 1; j <= i; j++) printf("%.6f,", f1[j]);
+		printf("\n");
+	}
+	return 0;
 }

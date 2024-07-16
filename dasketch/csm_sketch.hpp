@@ -14,6 +14,10 @@ public:
 		counter = 0;
 	}
 
+	~csm_sketch(){
+		delete[] pool;
+	}
+
 	void add(elem_t e, int offset = 0, int delta = 1) {
 		for (int i = 0; i < hf_num; ++i) 
 			pool[(hf[i](e) + offset) % n] += delta;

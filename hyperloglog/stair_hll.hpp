@@ -16,6 +16,13 @@ public:
 		cur = 0; idx = 0;
 	}
 
+	~stair_level_hll(){
+		for (int i = 0; i < hll_num; ++i)
+			delete hll[i];
+		delete[] hll;
+		delete[] intv;
+	}
+
 	void add_window() {
 		if (cur % refresh_freq == 0 && cur != 0) {
 			idx = (idx + 1) % hll_num;

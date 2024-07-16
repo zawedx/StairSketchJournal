@@ -5,6 +5,7 @@
 #include "../common/hash.hpp"
 
 #define INF 1000000000
+// #define DEBUG_LESS_POOL
 
 #define INDEX_LENGTH 6
 #define INDEX_MAX 64
@@ -21,6 +22,9 @@ public:
 		
 		pool_number = memory / (pool_size * sizeof(HLLT));
 		if (shrink_flag) pool_number = pool_number / 64 * 64;
+		#ifdef DEBUG_LESS_POOL
+		pool_number = 1;
+		#endif
 		all_pool_array = new HLLT[pool_number * pool_size];
 		memset(all_pool_array, 0, sizeof(HLLT) * pool_number * pool_size);
 		all_pool = new HLLT*[pool_number];
@@ -29,8 +33,14 @@ public:
 		}
 
 		for (int i = 0; i < 36; i++){
-			lowbit_table[(1ll << i) % 37] = (HLLT)i;
+			lowbit_table[(1ll << i) % 37] = (HLLT)(i + 1);
 		}
+	}
+
+	~hll_sketch(){
+		delete[] all_pool;
+		delete[] all_pool_array;
+		// delete[] &(poolid_hf);
 	}
 	
 	int total_memory;
@@ -91,6 +101,10 @@ public:
 	}
 
 	void shrink() {
+		#ifdef DEBUG_LESS_POOL
+		return;
+		#endif
+		total_memory /= 2;
 		assert(pool_number % 2 == 0);
 		pool_number /= 2;
 		HLLT *new_all_pool_array = new HLLT[pool_number * pool_size];

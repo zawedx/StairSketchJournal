@@ -21,6 +21,13 @@ public:
 		_cnt = 0;
 	}
 
+	~stair_level_da(){
+		for (int i = 0; i < da_num; ++i)
+			delete da[i];
+		delete[] intv;
+		delete[] da;
+	}
+
 	void add_window() {
 		if (cur % refresh_freq == 0 && cur > 0) {
 			idx = (idx + 1) % da_num;
@@ -43,7 +50,7 @@ public:
 		return INT_MAX;
 	}
 	
-	void query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const {
+	void query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const {
 		for (int i = 0; i < da_num; ++i) 
 			if (intv[i].l <= wid && wid <= intv[i].r){
 				*result = new pair<elem_t, int>[k];
@@ -108,7 +115,7 @@ public:
 		return ret;
 	}
 
-	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const override {
+	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const override {
 		pair<elem_t, int>** array_head = new pair<elem_t, int>*[2 << lv_num];
 		result = array_head;
 		for (int i = 0; i < lv_num; ++i)
@@ -116,7 +123,7 @@ public:
 		return array_head;
 	}
 
-	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = 1000) const override {
+	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = TOP_K) const override {
 		for (int i = 0; i < lv_num; ++i)
 			lv[i]->notify(wid_start, wid_end);
 		return nullptr; 

@@ -38,7 +38,7 @@ public:
 		sketch->insert(wid, e, delta * wid);
 	}
 
-	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const override {
+	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const override {
 		pair<elem_t, int>** array_head = new pair<elem_t, int>*[2];
 		result = array_head;
 		sketch->query_topk(result[0], wid, k);
@@ -48,12 +48,12 @@ public:
 		return array_head;
 	}
 
-	pair<elem_t, int>** pretend_query_topk(pair<elem_t, int>** &result, int wid, int k = 1000) const {
+	pair<elem_t, int>** pretend_query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const {
 		sketch->pretend_query_topk(*result, k);
 		return nullptr;
 	}
 
-	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = 1000) const override {
+	pair<elem_t, int>** query_multiple_windows_topk(pair<elem_t, int>** &result, int wid_start, int wid_end, int k = TOP_K) const override {
 		for (int i = wid_start; i <= wid_end; ++i) pretend_query_topk(result, i);
 		return nullptr; 
 	}

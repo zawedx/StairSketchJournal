@@ -45,6 +45,14 @@ char* concatenate(const T1& val1, const T2& val2) {
     return result;
 }
 
+template <typename T1>
+char* convert(const T1& val1) {
+    size_t size1 = sizeof(T1);
+    char* result = new char[size1];
+    std::memcpy(result, &val1, size1);
+    return result;
+}
+
 #define MEMORY_ACCESS_ALL 0
 
 void delete_topk_result(pair<elem_t, int>** answer_begin, pair<elem_t, int>** answer_end){
@@ -52,3 +60,9 @@ void delete_topk_result(pair<elem_t, int>** answer_begin, pair<elem_t, int>** an
 		delete[] *it;
 	delete[] answer_begin;
 }
+
+#define TOP_K 1000
+
+#define DA_DEFAULT_MEMORY MB(300)
+#define TOWER_DEFAULT_MEMORY MB(60)
+#define CMCU_DEFAULT_MEMORY MB(100)
