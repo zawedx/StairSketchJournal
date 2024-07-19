@@ -68,6 +68,42 @@ double calc_topk_ARE(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *pr
     // avg_AAE += AAE / (double)hit;
 }
 
+
+double calc_topk_AEE(pair<elem_t, int> *ground_truth_topk, pair<elem_t, int> *predicted_topk, int k = TOP_K){
+    // unordered_map<int, int> ground_truth_map;
+    unordered_map<int, int> predicted_map;
+    predicted_map.clear();
+    for (int i = 0; i < k; i++){
+        // ground_truth_map[ground_truth_topk[i].first] = ground_truth_topk[i].second;
+        predicted_map[predicted_topk[i].first] = predicted_topk[i].second;
+    }
+    int tot = 0;
+    double ARE = 0;
+    double AAE = 0;
+    int hit = 0;
+    for (int i = 0; i < k; i++){
+        int freq = predicted_map[ground_truth_topk[i].first];
+
+        hit += (freq > 0);
+        // tot++;
+        tot += (ground_truth_topk[i].second > 0);
+        if (freq > 0){
+            ARE += fabs(ground_truth_topk[i].second - freq) / (double)ground_truth_topk[i].second;
+            AAE += fabs(ground_truth_topk[i].second - freq);
+        } else {
+            ARE += fabs(ground_truth_topk[i].second - 0) / (double)ground_truth_topk[i].second;
+            AAE += fabs(ground_truth_topk[i].second - 0);
+        }
+    }
+    
+    // return (double)hit / (double)tot;
+    return AAE / (double)tot;
+
+    // avg_F1 += (double)hit / (double)tot;
+    // avg_ARE += ARE / (double)hit;
+    // avg_AAE += AAE / (double)hit;
+}
+
 double calc_KT(unordered_map<int, int>& ground_truth_map, unordered_map<int, int>& predicted_map){
     unordered_map<int, int>::iterator it, itx, ity;
     int P = 0, div = 0;

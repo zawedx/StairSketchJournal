@@ -310,6 +310,26 @@ void cnt_test_stability_are(framework *sketch, double *are){
 	}
 }
 
+void cnt_test_stability_aae(framework *sketch, double *aae){
+	for (int i = 1; i <= cfg.win_num; ++i) {
+		if (sketch->add_delta_implemented()) {
+			for (int k = 0; k < elem_cnt; ++k)
+				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
+					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+		} else {
+			for (elem_t e : win_data[i]) sketch->add(i, e);
+		}
+
+		int tot = 0; aae[i] = 0;	
+		for (auto pr : win_set[i]) {
+			int real = pr.second, ans = sketch->query(i, pr.first);
+			aae[i] += 1.0 * fabs(real - ans);
+			tot++;
+		}
+		aae[i] /= tot;
+	}
+}
+
 template<class Sketch>
 void bf_test_stability(Sketch *sketch, double *fpr) {
 	for (int i = 1; i <= cfg.win_num; ++i) {
@@ -381,6 +401,25 @@ void topk_test_are(framework *sketch, double *are) {
 		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
 		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
 		are[i - start + 1] = calc_topk_ARE(ground_truth, predict_result);
+		for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
+			delete[] *it;
+		delete[] answer_begin;
+		delete[] ground_truth;
+		delete[] predict_result;
+	}
+}
+
+void topk_test_aae(framework *sketch, double *aee) {
+	build_sketch(sketch);
+	fprintf(stderr, "Memory %d/%d\n", sketch->memory(), cfg.memory);
+	int start = cfg.win_num - cfg.ds_win_num + 1;
+	for (int i = start; i <= cfg.win_num; ++i) {
+		// compare topk
+		pair<elem_t, int> **answer_begin, **answer_end;
+		answer_begin = sketch->query_topk(answer_end, i); 
+		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
+		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
+		aee[i - start + 1] = calc_topk_AEE(ground_truth, predict_result);
 		for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
 			delete[] *it;
 		delete[] answer_begin;
@@ -467,8 +506,7 @@ void cnt_test_multi_aae(Sketch *sketch, double *aae) {
 	delete[] tot;
 }
 
-template<class Sketch>
-void cnt_test_aae(Sketch *sketch, double *aae) {
+void cnt_test_aae(framework *sketch, double *aae) {
 	build_sketch(sketch);
 	int start = cfg.win_num - cfg.ds_win_num + 1;
 	for (int i = start; i <= cfg.win_num; ++i) {
@@ -560,6 +598,14 @@ double topk_test_ware(framework *s) {
 	topk_test_are(s, are);
 	double result = weighted_score(are);
 	delete[] are;
+	return result;
+}
+
+double topk_test_waae(framework *s) {
+	double* aae = new double[cfg.ds_win_num + 1];
+	topk_test_aae(s, aae);
+	double result = weighted_score(aae);
+	delete[] aae;
 	return result;
 }
 

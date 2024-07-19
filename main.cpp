@@ -5,10 +5,10 @@
 
 #define SELECTED_DATASET "webpage"
 #define TEST_REPEAT_TIME 1
-#define TEST_DA
+// #define TEST_DA
 // #define TEST_ELASTIC
 // #define TEST_TOWER
-// #define TEST_CMCU
+#define TEST_CMCU
 // #define TEST_HLL
 // #define TEST_BF
 
@@ -578,8 +578,8 @@ vector<function<framework*(int)> > all_tower_framwork;
 vector<function<framework*(int)> > all_cmcu_framwork;
 void prepare_all_framework(){
 	// DA
-	// all_dasketch_framwork.push_back([](int memory){ return build_sda(memory); });
-	// all_dasketch_framwork.push_back(build_hda);
+	all_dasketch_framwork.push_back([](int memory){ return build_sda(memory); });
+	all_dasketch_framwork.push_back(build_hda);
 	all_dasketch_framwork.push_back(build_adada);
 	// HLL
 	all_hll_framwork.push_back([](int memory){ return build_shll(memory); });
@@ -599,11 +599,7 @@ void prepare_all_framework(){
 	all_cmcu_framwork.push_back(build_iacm);
 }
 
-void DASketchFigure();
-void HLLFigure();
-void ElasticFigure();
-void TowerFigure();
-void BloomFilter();
+void TestDifferentMemory();
 void TestErrorGradualness();
 void TestTimeStability();
 void TestAMA();
@@ -617,28 +613,9 @@ int main() {
 	// TestDifferentWindowTime();
 	// TestDifferentWindowNumber();
 	// TestErrorGradualness();
-	// TestTimeStability();
-	
-	cfg = config("webpage", 32, 32, 60, MB(4));
-	initialize(true);
-#ifdef TEST_DA
-	DASketchFigure();
-#endif
-// #ifdef TEST_HLL
-// 	HLLFigure();
-// #endif
-// #ifdef TEST_ELASTIC
-// 	ElasticFigure();
-// #endif
-// #ifdef TEST_TOWER
-// 	TowerFigure();
-// #endif
-// #ifdef TEST_CMCU
-// 	CMCUFigure();
-// #endif
-// #ifdef TEST_BF
-// 	BloomFilter();
-// #endif
+	TestTimeStability();
+
+	// TestDifferentMemory();
 
 	// TestAMA();
 	
@@ -667,7 +644,7 @@ void Newfigure_fixed_config_result(const char* file_name, int current_config,
 }
 
 void TestDifferentWindowTime(){
-	cfg = config("webpage", 32, 32, 60, MB(4));
+	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(4));
 	int start_tim = 10, end_tim = 60, gap_tim = 10;
 	for (int tim = start_tim; tim <= end_tim; tim += gap_tim) {
 		initialize(true, tim);
@@ -677,21 +654,53 @@ void TestDifferentWindowTime(){
 			FILE *fp = fopen("2_2_DA_WARE_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),SDA,HDA,AdaDA\n");
 			fclose(fp);
+			FILE *fp = fopen("2_2_DA_WAAE_wintime.csv", "w");
+			fprintf(fp, "Window Time(s),SDA,HDA,AdaDA\n");
+			fclose(fp);
 			fp = fopen("2_2_DA_WF1_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),SDA,HDA,AdaDA\n");
 			fclose(fp);
 		}
 		Newfigure_fixed_config_result("2_2_DA_WARE_wintime.csv", tim, topk_test_ware, all_dasketch_framwork);
+		Newfigure_fixed_config_result("2_2_DA_WAAE_wintime.csv", tim, topk_test_waae, all_dasketch_framwork);
 		Newfigure_fixed_config_result("2_2_DA_WF1_wintime.csv", tim, topk_test_wf1, all_dasketch_framwork);
 	#endif
 	#ifdef TEST_HLL
 		// HLLFigure();
 	#endif
 	#ifdef TEST_ELASTIC
-		// ElasticFigure();
+		cfg.memory = ELASTIC_DEFAULT_MEMORY;
+		if (tim == start_tim){
+			FILE *fp = fopen("2_2_Elastic_WARE_wintime.csv", "w");
+			fprintf(fp, "Window Time(s),SElastic,HElastic,AdaElastic\n");
+			fclose(fp);
+			FILE *fp = fopen("2_2_Elastic_WAAE_wintime.csv", "w");
+			fprintf(fp, "Window Time(s),SElastic,HElastic,AdaElastic\n");
+			fclose(fp);
+			fp = fopen("2_2_Elastic_WF1_wintime.csv", "w");
+			fprintf(fp, "Window Time(s),SElastic,HElastic,AdaElastic\n");
+			fclose(fp);
+		}
+		Newfigure_fixed_config_result("2_2_Elastic_WARE_wintime.csv", tim, topk_test_ware, all_elastic_framwork);
+		Newfigure_fixed_config_result("2_2_Elastic_WAAE_wintime.csv", tim, topk_test_waae, all_elastic_framwork);
+		Newfigure_fixed_config_result("2_2_Elastic_WF1_wintime.csv", tim, topk_test_wf1, all_elastic_framwork);
 	#endif
 	#ifdef TEST_TOWER
-		// TowerFigure();
+		cfg.memory = TOWER_DEFAULT_MEMORY;
+		if (tim == start_tim){
+			FILE *fp = fopen("1_2_Tower_WARE_wintime.csv", "w");
+			fprintf(fp, "Window Time(s),STower,HTower,AdaTower\n");
+			fclose(fp);
+			FILE *fp = fopen("1_2_Tower_WAAE_wintime.csv", "w");
+			fprintf(fp, "Window Time(s),STower,HTower,AdaTower\n");
+			fclose(fp);
+			fp = fopen("1_2_Tower_WF1_wintime.csv", "w");
+			fprintf(fp, "Window Time(s),STower,HTower,AdaTower\n");
+			fclose(fp);
+		}
+		Newfigure_fixed_config_result("1_2_Tower_WARE_wintime.csv", tim, cnt_test_ware, all_tower_framwork);
+		Newfigure_fixed_config_result("1_2_Tower_WAAE_wintime.csv", tim, cnt_test_waae, all_tower_framwork);
+		Newfigure_fixed_config_result("1_2_Tower_WF1_wintime.csv", tim, cnt_test_wf1, all_tower_framwork);
 	#endif
 	#ifdef TEST_BF
 		// BloomFilter();
@@ -700,7 +709,7 @@ void TestDifferentWindowTime(){
 }
 
 void TestDifferentWindowNumber(){
-	cfg = config("webpage", 32, 32, 60, MB(4));
+	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(4));
 	int start_num = 8, end_num = 256;
 	for (int num = start_num; num <= end_num; num <<= 1) {
 		cfg.ds_win_num = num;
@@ -711,10 +720,10 @@ void TestDifferentWindowNumber(){
 		cfg.memory = DA_DEFAULT_MEMORY;
 		if (num == start_num){
 			FILE *fp = fopen("2_2_DA_WARE_winnum.csv", "w");
-			fprintf(fp, "Window Number(s),SDA,HDA,AdaDA\n");
+			fprintf(fp, "Window Number,SDA,HDA,AdaDA\n");
 			fclose(fp);
 			fp = fopen("2_2_DA_WF1_winnum.csv", "w");
-			fprintf(fp, "Window Number(s),SDA,HDA,AdaDA\n");
+			fprintf(fp, "Window Number,SDA,HDA,AdaDA\n");
 			fclose(fp);
 		}
 		Newfigure_fixed_config_result("2_2_DA_WARE_winnum.csv", num, topk_test_ware, all_dasketch_framwork);
@@ -724,10 +733,38 @@ void TestDifferentWindowNumber(){
 		// HLLFigure();
 	#endif
 	#ifdef TEST_ELASTIC
-		// ElasticFigure();
+		cfg.memory = ELASTIC_DEFAULT_MEMORY;
+		if (num == start_num){
+			FILE *fp = fopen("2_2_Elastic_WARE_winnum.csv", "w");
+			fprintf(fp, "Window Number,SElastic,HElastic,AdaElastic\n");
+			fclose(fp);
+			FILE *fp = fopen("2_2_Elastic_WAAE_winnum.csv", "w");
+			fprintf(fp, "Window Number,SElastic,HElastic,AdaElastic\n");
+			fclose(fp);
+			fp = fopen("2_2_Elastic_WF1_winnum.csv", "w");
+			fprintf(fp, "Window Number,SElastic,HElastic,AdaElastic\n");
+			fclose(fp);
+		}
+		Newfigure_fixed_config_result("2_2_Elastic_WARE_winnum.csv", num, topk_test_ware, all_elastic_framwork);
+		Newfigure_fixed_config_result("2_2_Elastic_WAAE_winnum.csv", num, topk_test_waae, all_elastic_framwork);
+		Newfigure_fixed_config_result("2_2_Elastic_WF1_winnum.csv", num, topk_test_wf1, all_elastic_framwork);
 	#endif
 	#ifdef TEST_TOWER
-		// TowerFigure();
+		cfg.memory = TOWER_DEFAULT_MEMORY;
+		if (num == start_num){
+			FILE *fp = fopen("1_2_Tower_WARE_winnum.csv", "w");
+			fprintf(fp, "Window Number,STower,HTower,AdaTower\n");
+			fclose(fp);
+			FILE *fp = fopen("1_2_Tower_WAAE_winnum.csv", "w");
+			fprintf(fp, "Window Number,STower,HTower,AdaTower\n");
+			fclose(fp);
+			fp = fopen("1_2_Tower_WF1_winnum.csv", "w");
+			fprintf(fp, "Window Number,STower,HTower,AdaTower\n");
+			fclose(fp);
+		}
+		Newfigure_fixed_config_result("1_2_Tower_WARE_winnum.csv", num, cnt_test_ware, all_tower_framwork);
+		Newfigure_fixed_config_result("1_2_Tower_WAAE_winnum.csv", num, cnt_test_waae, all_tower_framwork);
+		Newfigure_fixed_config_result("1_2_Tower_WF1_winnum.csv", num, cnt_test_wf1, all_tower_framwork);
 	#endif
 	#ifdef TEST_BF
 		// BloomFilter();
@@ -770,11 +807,11 @@ void Newfigure_memory_fixed(const char* file_name,
 }
 
 void TestErrorGradualness(){
-	cfg = config("webpage", 32, 32, 60, MB(120));
+	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(120));
 	initialize(true);
 #ifdef TEST_DA
 	// DA
-	cfg.memory = MB(10);
+	cfg.memory = DA_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("2_1_1_DA_f1.csv",topk_test_f1,all_dasketch_framwork);
 	Newfigure_memory_fixed("2_1_1_DA_ARE.csv",topk_test_are,all_dasketch_framwork);
 #endif
@@ -787,7 +824,7 @@ void TestErrorGradualness(){
 
 #ifdef TEST_ELASTIC
 	// Elastic
-	cfg.memory = MB(120);
+	cfg.memory = ELASTIC_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("2_1_1_Elastic_f1.csv",topk_test_f1,all_elastic_framwork);
 	Newfigure_memory_fixed("2_1_1_Elastic_ARE.csv",topk_test_are,all_elastic_framwork);
 #endif
@@ -796,12 +833,14 @@ void TestErrorGradualness(){
 	// Tower
 	cfg.memory = TOWER_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("1_1_1_Tower_ARE.csv",cnt_test_are,all_tower_framwork);
+	Newfigure_memory_fixed("1_1_1_Tower_AAE.csv",cnt_test_aae,all_tower_framwork);
 #endif
 
 #ifdef TEST_CMCU
 	// CMCU
 	cfg.memory = CMCU_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("1_1_1_CMCU_ARE.csv",cnt_test_are,all_cmcu_framwork);
+	Newfigure_memory_fixed("1_1_1_CMCU_AAE.csv",cnt_test_aae,all_cmcu_framwork);
 #endif
 
 #ifdef TEST_BF
@@ -812,11 +851,11 @@ void TestErrorGradualness(){
 }
 
 void TestTimeStability(){
-	cfg = config("webpage", 64, 64, 60, MB(120));
+	cfg = config(SELECTED_DATASET, 64, 64, 60, MB(120));
 	initialize(true);
 #ifdef TEST_DA
 	// DA
-	cfg.memory = MB(120);
+	cfg.memory = DA_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("2_1_2_DA_f1.csv",topk_test_stability_f1,all_dasketch_framwork);
 	Newfigure_memory_fixed("2_1_2_DA_ARE.csv",topk_test_stability_are,all_dasketch_framwork);
 #endif
@@ -829,7 +868,7 @@ void TestTimeStability(){
 
 #ifdef TEST_ELASTIC
 	// Elastic
-	cfg.memory = MB(120);
+	cfg.memory = ELASTIC_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("2_1_2_Elastic_f1.csv",topk_test_stability_f1,all_elastic_framwork);
 	Newfigure_memory_fixed("2_1_2_Elastic_ARE.csv",topk_test_stability_are,all_elastic_framwork);
 #endif
@@ -838,12 +877,14 @@ void TestTimeStability(){
 	// Tower
 	cfg.memory = TOWER_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("1_1_2_Tower_ARE.csv",cnt_test_stability_are,all_tower_framwork);
+	Newfigure_memory_fixed("1_1_2_Tower_AAE.csv",cnt_test_stability_aae,all_tower_framwork);
 #endif
 
 #ifdef TEST_CMCU
 	// CMCU
 	cfg.memory = CMCU_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("1_1_2_CMCU_ARE.csv",cnt_test_stability_are,all_cmcu_framwork);
+	Newfigure_memory_fixed("1_1_2_CMCU_AAE.csv",cnt_test_stability_aae,all_cmcu_framwork);
 #endif
 
 #ifdef TEST_BF
@@ -855,10 +896,10 @@ void TestTimeStability(){
 }
 
 void TestAMA(){
-	cfg = config("webpage", 32, 32, 60, MB(120));
+	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(120));
 #ifdef TEST_DA
 	// DA
-	cfg.memory = MB(120);
+	cfg.memory = DA_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("2_3_1_DA_AMA.csv",topk_test_qcnt,all_dasketch_framwork);
 #endif
 
@@ -870,7 +911,7 @@ void TestAMA(){
 
 #ifdef TEST_ELASTIC
 	// Elastic
-	cfg.memory = MB(120);
+	cfg.memory = ELASTIC_DEFAULT_MEMORY;
 	Newfigure_memory_fixed("2_3_1_Elastic_AMA.csv",topk_test_qcnt,all_elastic_framwork);
 #endif
 
@@ -924,11 +965,11 @@ void DASketchFigure(){
 	// Newfigure("rb.csv","Memory(MB),SDA,HDA,AdaDA\n",
 	// 	MB(50), MB(100), MB(10), ada_test_diff_window_f1, all_dasketch_framwork);
 	Newfigure("2_2_DA_WF1.csv","Memory(MB),SDA,HDA,AdaDA\n",
-		MB(50), MB(100), MB(10), topk_test_wf1, all_dasketch_framwork);
+		MB(5), MB(25), MB(5), topk_test_wf1, all_dasketch_framwork);
 	Newfigure("2_2_DA_WARE.csv","Memory(MB),SDA,HDA,AdaDA\n",
-		MB(50), MB(100), MB(10), topk_test_ware, all_dasketch_framwork);
-	Newfigure("2_3_2_DA_throughput.csv","Memory(MB),SDA,HDA,AdaDA\n",
-		MB(120), MB(120), MB(5), test_speed, all_dasketch_framwork);
+		MB(5), MB(25), MB(5), topk_test_ware, all_dasketch_framwork);
+	// Newfigure("2_3_2_DA_throughput.csv","Memory(MB),SDA,HDA,AdaDA\n",
+	// 	MB(120), MB(120), MB(5), test_speed, all_dasketch_framwork);
 }
 
 
@@ -942,9 +983,9 @@ void HLLFigure(){
 
 void ElasticFigure(){
 	Newfigure("2_2_Elastic_WF1.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
-		MB(15), MB(40), MB(5), topk_test_wf1, all_elastic_framwork);
-	Newfigure("2_2_Elastic_WARE.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
-		MB(15), MB(40), MB(5), topk_test_ware, all_elastic_framwork);
+		MB(15), MB(35), MB(5), topk_test_wf1, all_elastic_framwork);
+	// Newfigure("2_2_Elastic_WARE.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
+	// 	MB(15), MB(35), MB(5), topk_test_ware, all_elastic_framwork);
 	// Newfigure("2_3_2_Elastic_throughput.csv","Memory(MB),SElastic,HElastic,AdaElastic\n",
 	// 	MB(120), MB(120), MB(5), test_speed, all_elastic_framwork);
 }
@@ -980,4 +1021,27 @@ void BloomFilter(){
 	
 	fflush(fp);
 	fclose(fp);
+}
+
+void TestDifferentMemory(){
+	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(4));
+	initialize(true);
+#ifdef TEST_DA
+	DASketchFigure();
+#endif
+#ifdef TEST_HLL
+	HLLFigure();
+#endif
+#ifdef TEST_ELASTIC
+	ElasticFigure();
+#endif
+#ifdef TEST_TOWER
+	TowerFigure();
+#endif
+#ifdef TEST_CMCU
+	// CMCUFigure();
+#endif
+#ifdef TEST_BF
+	BloomFilter();
+#endif
 }
