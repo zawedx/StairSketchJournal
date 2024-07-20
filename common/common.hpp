@@ -34,6 +34,9 @@ std::vector<elem_t> win_data[300];
 std::unordered_map<elem_t, int> win_set[300];
 std::unordered_set<elem_t> elem_set;
 
+bool sortBySecondDesc(const std::pair<elem_t, int> &a, const std::pair<elem_t, int> &b) {
+    return a.second > b.second;
+}
 
 template <typename T1, typename T2>
 char* concatenate(const T1& val1, const T2& val2) {

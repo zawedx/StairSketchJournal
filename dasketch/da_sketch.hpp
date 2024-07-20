@@ -59,7 +59,7 @@ public:
 		int pos;
 
 		bool operator < (const Query_Item& other) const{
-			return cnt > other.cnt;
+			return underest + store_unbiased > other.underest + other.store_unbiased;
 		}
 	};
 
@@ -109,39 +109,35 @@ public:
 	}
 
 	int query(elem_t e, int offset = 0) const {
-		// _cnt += hf_num;
-		// int res = INT_MAX;
-		// for (int i = 0; i < hf_num; ++i)
-		// 	res = std::min(res, pool[(hf[i](e) + offset) % n]);
-		// return res;
-		return -1;
+		unsigned int h_id = (hf[0](e) + offset) % bucket_number;
+
+		int i, j;
+		int min_cnt = INF, arg_min = -1;
+
+		for (j = 0; j < bucket_length; j++){
+			if ((item[h_id][j].id == e) && (item[h_id][j].underest >= 1)){
+				return item[h_id][j].underest + item[h_id][j].store_unbiased;
+			}
+		}
+
+		int result = light_part->query(e, offset, 1);
+		return result;
 	}
 
 	void query_topk(pair<elem_t, int> *result, int k = TOP_K) const {
 		_cnt += once_qcnt();
-
-		Query_Item* query_item = new Query_Item[bucket_number * bucket_length];
-
-		for (int i = 0; i < bucket_number; i++){
+		vector<pair<elem_t, int> > all_possible_topk;
+		all_possible_topk.clear();
+		for (int i = 0; i < bucket_number; i++)
 			for (int j = 0; j < bucket_length; j++){
-				query_item[i * bucket_length + j].buc_id = i;
-				query_item[i * bucket_length + j].pos = j;
-				query_item[i * bucket_length + j].cnt = item[i][j].cnt;
+				all_possible_topk.push_back(make_pair(item[i][j].id, item[i][j].underest + item[i][j].store_unbiased));
 			}
-		}
-
-		sort(query_item, query_item + item_num);
+		sort(all_possible_topk.begin(), all_possible_topk.end(), sortBySecondDesc);
 		
-		for (int i = 0; i < min(k, item_num); i++){
-			int tmp;
-			Item &it = item[query_item[i].buc_id][query_item[i].pos];
-			result[i] = make_pair(it.id, it.underest + it.store_unbiased);
-		}
-		for (int i = item_num; i < k; i++){
+		for (int i = 0; i < min(k, item_num); i++)
+			result[i] = all_possible_topk[i];
+		for (int i = item_num; i < k; i++)
 			result[i] = make_pair(elem_t(0), -1);
-		}
-		
-		delete[] query_item;
 	}
 	
 	void pretend_query_topk(pair<elem_t, int> *result, int k = TOP_K) const {
@@ -178,6 +174,7 @@ public:
 	void clear() {
 		hf[0].reset(); // Use new hash functions
 		memset(item_arr, 0, sizeof(Item) * item_num);
+		light_part->clear();
 	}
 
 	int size() const { return total_memory / 4; }

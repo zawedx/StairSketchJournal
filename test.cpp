@@ -136,10 +136,6 @@ item_aggregation_cm* build_iacm(int memory) {
 	return new item_aggregation_cm(memory, 2, cfg.ds_win_num);
 }
 
-
-bool sortBySecondDesc(const std::pair<elem_t, int> &a, const std::pair<elem_t, int> &b) {
-    return a.second > b.second;
-}
 pair<elem_t, int>* map_to_topk(std::unordered_map<elem_t, int> &map, int k = TOP_K){
 	pair<elem_t, int>* result = new pair<elem_t, int>[k];
 	vector<pair<elem_t, int>> arr;
@@ -295,7 +291,7 @@ void cnt_test_stability_are(framework *sketch, double *are){
 		if (sketch->add_delta_implemented()) {
 			for (int k = 0; k < elem_cnt; ++k)
 				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
-					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+					sketch->add(i, elems[k].e, elems[k].cnt[i] - elems[k].cnt[i-1]);
 		} else {
 			for (elem_t e : win_data[i]) sketch->add(i, e);
 		}
@@ -315,7 +311,7 @@ void cnt_test_stability_aae(framework *sketch, double *aae){
 		if (sketch->add_delta_implemented()) {
 			for (int k = 0; k < elem_cnt; ++k)
 				if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0)
-					sketch->add(i, elems[k].e, elems[k].cnt[i]);
+					sketch->add(i, elems[k].e, elems[k].cnt[i] - elems[k].cnt[i-1]);
 		} else {
 			for (elem_t e : win_data[i]) sketch->add(i, e);
 		}
@@ -401,6 +397,11 @@ void topk_test_are(framework *sketch, double *are) {
 		pair<elem_t, int>* ground_truth = map_to_topk(win_set[i]);
 		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
 		are[i - start + 1] = calc_topk_ARE(ground_truth, predict_result);
+		// see different win data
+		fprintf(stderr, "%d win %d:%d, %d:%d\n", i, 
+			ground_truth[0].second, predict_result[0].second,
+			ground_truth[TOP_K - 1].second, predict_result[TOP_K - 1].second);
+		//
 		for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
 			delete[] *it;
 		delete[] answer_begin;

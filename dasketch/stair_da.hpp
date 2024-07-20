@@ -109,10 +109,45 @@ public:
 	}
 
 	int query(int wid, elem_t e) const override {
-		int ret = INT_MAX;
-		for (int i = 0; i < lv_num; ++i)
-			ret = min(ret, lv[i]->query(wid, e));
-		return ret;
+		double ret = 0;
+		int valid_lv = 0;
+		for (int i = 0; i < lv_num; ++i){
+			int result = lv[i]->query(wid, e);
+			if (result != INT_MAX){
+				ret += result;
+				valid_lv++;
+			}
+		}
+		return round(ret / valid_lv);
+	}
+
+	void compress_topk_list(pair<elem_t, int>** list_begin, pair<elem_t, int>** &list_end, int wid, int k = TOP_K) const {
+		// stair frequency query optimization: average freq for union elements in each lv topk
+		unordered_map<elem_t, int> union_element;
+		union_element.clear();
+		for (pair<elem_t, int>** list = list_begin; list != list_end; list++){
+			for (int i = 0; i < k; i++)
+				if (list[0][i].second > 0) 
+					union_element[list[0][i].first] = 1;
+		}
+		
+		vector<pair<elem_t, int> > arr;
+		arr.clear();
+		for (auto it : union_element){
+			int freq = query(wid, it.first);
+			arr.push_back(make_pair(it.first, freq));
+		}
+		sort(arr.begin(), arr.end(), sortBySecondDesc);
+
+		for (int i = 0; i < k; i++){
+			if (i < arr.size()) list_begin[0][i] = arr[i];
+			else list_begin[0][i] = make_pair(0, -1);
+		}
+
+		while (list_end != list_begin + 1){
+			list_end--;
+			delete[] *list_end;
+		}
 	}
 
 	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const override {
@@ -120,6 +155,7 @@ public:
 		result = array_head;
 		for (int i = 0; i < lv_num; ++i)
 			lv[i]->query_topk(result, wid, k);
+		compress_topk_list(array_head, result, wid, k);
 		return array_head;
 	}
 

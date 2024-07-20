@@ -5,10 +5,10 @@
 
 #define SELECTED_DATASET "webpage"
 #define TEST_REPEAT_TIME 1
-// #define TEST_DA
+#define TEST_DA
 // #define TEST_ELASTIC
 // #define TEST_TOWER
-#define TEST_CMCU
+// #define TEST_CMCU
 // #define TEST_HLL
 // #define TEST_BF
 
@@ -612,8 +612,8 @@ int main() {
 
 	// TestDifferentWindowTime();
 	// TestDifferentWindowNumber();
-	// TestErrorGradualness();
-	TestTimeStability();
+	TestErrorGradualness();
+	// TestTimeStability();
 
 	// TestDifferentMemory();
 
@@ -654,7 +654,7 @@ void TestDifferentWindowTime(){
 			FILE *fp = fopen("2_2_DA_WARE_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),SDA,HDA,AdaDA\n");
 			fclose(fp);
-			FILE *fp = fopen("2_2_DA_WAAE_wintime.csv", "w");
+			fp = fopen("2_2_DA_WAAE_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),SDA,HDA,AdaDA\n");
 			fclose(fp);
 			fp = fopen("2_2_DA_WF1_wintime.csv", "w");
@@ -674,7 +674,7 @@ void TestDifferentWindowTime(){
 			FILE *fp = fopen("2_2_Elastic_WARE_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),SElastic,HElastic,AdaElastic\n");
 			fclose(fp);
-			FILE *fp = fopen("2_2_Elastic_WAAE_wintime.csv", "w");
+			fp = fopen("2_2_Elastic_WAAE_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),SElastic,HElastic,AdaElastic\n");
 			fclose(fp);
 			fp = fopen("2_2_Elastic_WF1_wintime.csv", "w");
@@ -691,7 +691,7 @@ void TestDifferentWindowTime(){
 			FILE *fp = fopen("1_2_Tower_WARE_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),STower,HTower,AdaTower\n");
 			fclose(fp);
-			FILE *fp = fopen("1_2_Tower_WAAE_wintime.csv", "w");
+			fp = fopen("1_2_Tower_WAAE_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),STower,HTower,AdaTower\n");
 			fclose(fp);
 			fp = fopen("1_2_Tower_WF1_wintime.csv", "w");
@@ -722,11 +722,15 @@ void TestDifferentWindowNumber(){
 			FILE *fp = fopen("2_2_DA_WARE_winnum.csv", "w");
 			fprintf(fp, "Window Number,SDA,HDA,AdaDA\n");
 			fclose(fp);
+			fp = fopen("2_2_DA_WAAE_winnum.csv", "w");
+			fprintf(fp, "Window Number,SDA,HDA,AdaDA\n");
+			fclose(fp);
 			fp = fopen("2_2_DA_WF1_winnum.csv", "w");
 			fprintf(fp, "Window Number,SDA,HDA,AdaDA\n");
 			fclose(fp);
 		}
 		Newfigure_fixed_config_result("2_2_DA_WARE_winnum.csv", num, topk_test_ware, all_dasketch_framwork);
+		Newfigure_fixed_config_result("2_2_DA_WAAE_winnum.csv", num, topk_test_waae, all_dasketch_framwork);
 		Newfigure_fixed_config_result("2_2_DA_WF1_winnum.csv", num, topk_test_wf1, all_dasketch_framwork);
 	#endif
 	#ifdef TEST_HLL
@@ -738,7 +742,7 @@ void TestDifferentWindowNumber(){
 			FILE *fp = fopen("2_2_Elastic_WARE_winnum.csv", "w");
 			fprintf(fp, "Window Number,SElastic,HElastic,AdaElastic\n");
 			fclose(fp);
-			FILE *fp = fopen("2_2_Elastic_WAAE_winnum.csv", "w");
+			fp = fopen("2_2_Elastic_WAAE_winnum.csv", "w");
 			fprintf(fp, "Window Number,SElastic,HElastic,AdaElastic\n");
 			fclose(fp);
 			fp = fopen("2_2_Elastic_WF1_winnum.csv", "w");
@@ -755,7 +759,7 @@ void TestDifferentWindowNumber(){
 			FILE *fp = fopen("1_2_Tower_WARE_winnum.csv", "w");
 			fprintf(fp, "Window Number,STower,HTower,AdaTower\n");
 			fclose(fp);
-			FILE *fp = fopen("1_2_Tower_WAAE_winnum.csv", "w");
+			fp = fopen("1_2_Tower_WAAE_winnum.csv", "w");
 			fprintf(fp, "Window Number,STower,HTower,AdaTower\n");
 			fclose(fp);
 			fp = fopen("1_2_Tower_WF1_winnum.csv", "w");

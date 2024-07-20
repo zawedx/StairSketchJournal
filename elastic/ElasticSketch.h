@@ -94,15 +94,11 @@ public:
         }
     }
 
-	static bool greater_pair(const pair<elem_t, int> &x, const pair<elem_t, int> &y){
-		return x.second > y.second;
-	}
-
     void query_topk(pair<elem_t, int>* &result, int wid, int k = 1000){
         _cnt += hfn();
         vector<pair<elem_t, uint32_t> > all_possible_topk;
         prepare_topk(all_possible_topk, wid);
-        sort(all_possible_topk.begin(), all_possible_topk.end(), greater_pair);
+        sort(all_possible_topk.begin(), all_possible_topk.end(), sortBySecondDesc);
         result = new pair<elem_t, int>[k];
         for (int i = 0; i < k; i++)
             if (i >= all_possible_topk.size())

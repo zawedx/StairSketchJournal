@@ -122,10 +122,6 @@ public:
 		}
 	}
 
-	static bool greater_pair(const pair<elem_t, int> &x, const pair<elem_t, int> &y){
-		return x.second > y.second;
-	}
-
 	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const override {
 		if (MEMORY_ACCESS_ALL == 1) _cnt += 1;
 		else _cnt += bucket_number * bucket_length;
@@ -141,7 +137,7 @@ public:
 					all_possible_topk.push_back(make_pair(item[i][j].id.id, item[i][j].underest + item[i][j].store_unbiased));
 				}
 			}
-		sort(all_possible_topk.begin(), all_possible_topk.end(), greater_pair);
+		sort(all_possible_topk.begin(), all_possible_topk.end(), sortBySecondDesc);
 		// assert(all_possible_topk.size() >= k);
 		for (int i = 0; i < k; i++){
 			if (i < all_possible_topk.size())
