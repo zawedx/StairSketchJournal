@@ -59,7 +59,7 @@ public:
 		int pos;
 
 		bool operator < (const Query_Item& other) const{
-			return underest + store_unbiased > other.underest + other.store_unbiased;
+			return cnt > other.cnt;
 		}
 	};
 
@@ -126,18 +126,32 @@ public:
 
 	void query_topk(pair<elem_t, int> *result, int k = TOP_K) const {
 		_cnt += once_qcnt();
-		vector<pair<elem_t, int> > all_possible_topk;
-		all_possible_topk.clear();
-		for (int i = 0; i < bucket_number; i++)
+
+		Query_Item* query_item = new Query_Item[item_num];
+
+		for (int i = 0; i < bucket_number; i++){
 			for (int j = 0; j < bucket_length; j++){
-				all_possible_topk.push_back(make_pair(item[i][j].id, item[i][j].underest + item[i][j].store_unbiased));
+				query_item[i * bucket_length + j].buc_id = i;
+				query_item[i * bucket_length + j].pos = j;
+				query_item[i * bucket_length + j].cnt = item[i][j].cnt;
+				query_item[i * bucket_length + j].id = item[i][j].id;
+				query_item[i * bucket_length + j].underest = item[i][j].underest;
+				query_item[i * bucket_length + j].store_overest = item[i][j].store_overest;
+				query_item[i * bucket_length + j].store_unbiased = item[i][j].store_unbiased;
 			}
-		sort(all_possible_topk.begin(), all_possible_topk.end(), sortBySecondDesc);
+		}
+
+		sort(query_item, query_item + bucket_number * bucket_length);
 		
-		for (int i = 0; i < min(k, item_num); i++)
-			result[i] = all_possible_topk[i];
-		for (int i = item_num; i < k; i++)
+		for (int i = 0; i < min(k, bucket_number * bucket_length); i++){
+			int tmp;
+			result[i] = make_pair(query_item[i].id, query_item[i].underest + query_item[i].store_unbiased);
+		}
+		for (int i = bucket_number * bucket_length; i < k; i++){
 			result[i] = make_pair(elem_t(0), -1);
+		}
+		
+		delete(query_item);
 	}
 	
 	void pretend_query_topk(pair<elem_t, int> *result, int k = TOP_K) const {

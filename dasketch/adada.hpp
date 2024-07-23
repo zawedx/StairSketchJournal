@@ -129,22 +129,42 @@ public:
 		pair<elem_t, int>** array_head = new pair<elem_t, int>*[2];
 		result = array_head;
 		*result = new pair<elem_t, int>[k];
-		vector<pair<elem_t, int> > all_possible_topk;
-		all_possible_topk.clear();
-		for (int i = 0; i < bucket_number; i++)
+
+		Query_Item* query_item = new Query_Item[item_num];
+
+		for (int i = 0; i < bucket_number; i++){
 			for (int j = 0; j < bucket_length; j++){
-				if (item[i][j].id.w == wid){
-					all_possible_topk.push_back(make_pair(item[i][j].id.id, item[i][j].underest + item[i][j].store_unbiased));
+				if (item[i][j].id.w != wid){
+					query_item[i * bucket_length + j].buc_id = i;
+					query_item[i * bucket_length + j].pos = j;
+					query_item[i * bucket_length + j].cnt = -1;
+					query_item[i * bucket_length + j].id = item[i][j].id;
+					query_item[i * bucket_length + j].underest = -1;
+					query_item[i * bucket_length + j].store_overest = -1;
+					query_item[i * bucket_length + j].store_unbiased = -1;
+					continue;
 				}
+				query_item[i * bucket_length + j].buc_id = i;
+				query_item[i * bucket_length + j].pos = j;
+				query_item[i * bucket_length + j].cnt = item[i][j].cnt;
+				query_item[i * bucket_length + j].id = item[i][j].id;
+				query_item[i * bucket_length + j].underest = item[i][j].underest;
+				query_item[i * bucket_length + j].store_overest = item[i][j].store_overest;
+				query_item[i * bucket_length + j].store_unbiased = item[i][j].store_unbiased;
 			}
-		sort(all_possible_topk.begin(), all_possible_topk.end(), sortBySecondDesc);
-		// assert(all_possible_topk.size() >= k);
-		for (int i = 0; i < k; i++){
-			if (i < all_possible_topk.size())
-				result[0][i] = all_possible_topk[i];
-			else
-				result[0][i] = make_pair(elem_t(0), -1);
 		}
+
+		sort(query_item, query_item + bucket_number * bucket_length);
+		
+		for (int i = 0; i < min(k, bucket_number * bucket_length); i++){
+			int tmp;
+			result[0][i] = make_pair(query_item[i].id.id, query_item[i].underest + query_item[i].store_unbiased);
+		}
+		for (int i = bucket_number * bucket_length; i < k; i++){
+			result[0][i] = make_pair(elem_t(0), -1);
+		}
+		
+		delete(query_item);
 		++result;
 		return array_head;
 	}

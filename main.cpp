@@ -5,9 +5,9 @@
 
 #define SELECTED_DATASET "webpage"
 #define TEST_REPEAT_TIME 1
-#define TEST_DA
+// #define TEST_DA
 // #define TEST_ELASTIC
-// #define TEST_TOWER
+#define TEST_TOWER
 // #define TEST_CMCU
 // #define TEST_HLL
 // #define TEST_BF
@@ -700,7 +700,6 @@ void TestDifferentWindowTime(){
 		}
 		Newfigure_fixed_config_result("1_2_Tower_WARE_wintime.csv", tim, cnt_test_ware, all_tower_framwork);
 		Newfigure_fixed_config_result("1_2_Tower_WAAE_wintime.csv", tim, cnt_test_waae, all_tower_framwork);
-		Newfigure_fixed_config_result("1_2_Tower_WF1_wintime.csv", tim, cnt_test_wf1, all_tower_framwork);
 	#endif
 	#ifdef TEST_BF
 		// BloomFilter();
@@ -768,7 +767,6 @@ void TestDifferentWindowNumber(){
 		}
 		Newfigure_fixed_config_result("1_2_Tower_WARE_winnum.csv", num, cnt_test_ware, all_tower_framwork);
 		Newfigure_fixed_config_result("1_2_Tower_WAAE_winnum.csv", num, cnt_test_waae, all_tower_framwork);
-		Newfigure_fixed_config_result("1_2_Tower_WF1_winnum.csv", num, cnt_test_wf1, all_tower_framwork);
 	#endif
 	#ifdef TEST_BF
 		// BloomFilter();
@@ -816,7 +814,7 @@ void TestErrorGradualness(){
 #ifdef TEST_DA
 	// DA
 	cfg.memory = DA_DEFAULT_MEMORY;
-	Newfigure_memory_fixed("2_1_1_DA_f1.csv",topk_test_f1,all_dasketch_framwork);
+	// Newfigure_memory_fixed("2_1_1_DA_f1.csv",topk_test_f1,all_dasketch_framwork);
 	Newfigure_memory_fixed("2_1_1_DA_ARE.csv",topk_test_are,all_dasketch_framwork);
 #endif
 

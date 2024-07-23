@@ -618,8 +618,7 @@ double cardinal_test_ware(framework *s) {
 	return return_value;
 }
 
-template<class Sketch>
-double cnt_test_waae(Sketch *s) {
+double cnt_test_waae(framework *s) {
 	double* aae = new double[cfg.ds_win_num + 1];
 	cnt_test_aae(s, aae);
 	return weighted_score(aae);
