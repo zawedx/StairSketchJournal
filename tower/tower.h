@@ -21,7 +21,7 @@ public:
     TowerSketch() {}
     // TowerSketch(uint32_t w_d) { init(w_d); }
 	TowerSketch(int memory, int hf_num, int shrink_flag = 0) {
-        if (shrink_flag) init(((memory >> 2) / d) / 64 * 64);
+        if (shrink_flag) init(((memory >> 2) / d) / shrink_flag * shrink_flag);
         else init((memory >> 2) / d);
 	}
     virtual ~TowerSketch() {

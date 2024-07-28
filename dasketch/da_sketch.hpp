@@ -17,7 +17,7 @@ public:
 		item_num = int(1.0 * memory * heavy_rate / sizeof(Item));
 		bucket_length = 8;
 		bucket_number = (item_num - 1) / bucket_length + 1;
-		if (shrink_flag) bucket_number = bucket_number / 64 * 64;
+		if (shrink_flag) bucket_number = bucket_number / shrink_flag * shrink_flag;
 		item_num = bucket_length * bucket_number;
 		item_arr = new Item[item_num];
 		item = new Item*[bucket_number];

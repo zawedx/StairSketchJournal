@@ -398,9 +398,11 @@ void topk_test_are(framework *sketch, double *are) {
 		pair<elem_t, int>* predict_result = topklist_to_topk(answer_begin, answer_end);
 		are[i - start + 1] = calc_topk_ARE(ground_truth, predict_result);
 		// see different win data
+	#ifdef DEBUG_FLAG
 		fprintf(stderr, "%d win %d:%d, %d:%d\n", i, 
 			ground_truth[0].second, predict_result[0].second,
 			ground_truth[TOP_K - 1].second, predict_result[TOP_K - 1].second);
+	#endif
 		//
 		for (pair<elem_t, int> **it = answer_begin; it != answer_end; it++)
 			delete[] *it;
@@ -441,8 +443,7 @@ void cardinal_test_are(framework *sketch, double *are) {
 	}
 }
 
-template<class Sketch>
-void cnt_test_multi_are(Sketch *sketch, double *are) {	
+void cnt_test_multi_are(framework *sketch, double *are) {	
 	build_sketch(sketch);
 	int **sum = new int*[elem_cnt];
 	int *tot = new int[cfg.ds_win_num + 1];
@@ -474,8 +475,7 @@ void cnt_test_multi_are(Sketch *sketch, double *are) {
 	delete[] tot;
 }
 
-template<class Sketch>
-void cnt_test_multi_aae(Sketch *sketch, double *aae) {	
+void cnt_test_multi_aae(framework *sketch, double *aae) {	
 	build_sketch(sketch);
 	int **sum = new int*[elem_cnt];
 	int *tot = new int[cfg.ds_win_num + 1];
@@ -512,15 +512,11 @@ void cnt_test_aae(framework *sketch, double *aae) {
 	int start = cfg.win_num - cfg.ds_win_num + 1;
 	for (int i = start; i <= cfg.win_num; ++i) {
 		int tot = 0; aae[i - start + 1] = 0;	
-		for (int k = 0; k < elem_cnt; ++k) {
-			if (elems[k].cnt[i] - elems[k].cnt[i-1] > 0) {
-				int real = elems[k].cnt[i] - elems[k].cnt[i-1], ans = sketch->query(i, elems[k].e);
-				aae[i - start + 1] += fabs(real - ans);
-				tot++;
-			}
+		for (auto pr : win_set[i]) {
+			int real = pr.second, ans = sketch->query(i, pr.first);
+			aae[i - start + 1] += fabs(real - ans);
+			tot++;
 		}
-		// fprintf(stderr, "\"%d\" ", tot);
-		// if (tot != 0) 
 		aae[i - start + 1] /= tot;
 	}
 }

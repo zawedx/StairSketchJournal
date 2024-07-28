@@ -42,7 +42,7 @@ public:
 			tower[i] = tower[i-1];
 			if (tower[i] && shk[i]) tower[i]->shrink();
 		}
-		tower[0] = new TowerSketch(tower0_memory, hf_num, 1);
+		tower[0] = new TowerSketch(tower0_memory, hf_num, max_win_num);
 	}
 
 	void add(int wid, elem_t e, int delta = 1) override {

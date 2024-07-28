@@ -1,7 +1,10 @@
+#define DEBUG_FLAG
+
 #include "impl_all.h"
 #include "test.cpp"
 #include <algorithm>
 #include <functional>
+
 
 #define SELECTED_DATASET "webpage"
 #define TEST_REPEAT_TIME 1
@@ -12,6 +15,20 @@
 // #define TEST_HLL
 // #define TEST_BF
 
+
+void dump_topk_total_freq(unordered_map<elem_t, int> &data, int &total, int &thres){
+	vector<int> all;
+	all.clear();
+	for (auto it : data){
+		all.push_back(it.second);
+	}
+	sort(all.begin(), all.end(), greater<int>());
+	total = 0;
+	for (int i = 0; i < TOP_K; i++){
+		total += all[i];
+	}
+	thres = all[TOP_K];
+}
 
 void initialize(bool save = false, double win_time = cfg.win_time) {
 	for (int i = 1; i <= cfg.win_num; ++i)
@@ -35,19 +52,27 @@ void initialize(bool save = false, double win_time = cfg.win_time) {
 		if (i == 32) count_win32[e] = 1;
 		if (i == 32) count_win32_total ++;
 		count_read++;
+	#ifdef DEBUG_FLAG
 		if (count_read % 4000000 == 0) 
 			fprintf(stderr, "\"i=%d, ts-tsbegin=%.4lf\"\n", i, ts - ts_begin);
+	#endif
 		if (ts - ts_begin > i * win_time){
 			// fprintf(stderr, "\"diff = %.8f - %.8f\" ", ts, ts_begin);
 			i++;
 		}
 	}
-	fprintf(stderr, "\"win32=%d\" ", (int)count_win32.size());
-	fprintf(stderr, "\"win32total=%d\" ", count_win32_total);
-	fprintf(stderr, "\"total read=%d\" ", count_read);
+	for (int i = 1; i <= cfg.win_num; i++) {
+		int total = 0, thres = 0;
+		dump_topk_total_freq(win_set[i], total, thres);
+		fprintf(stderr, "\"win %d item = %d total, %d unique, Ksum %d, min %d\"\n",
+			i, win_data[i].size(), win_set[i].size(), total, thres);
+	}
+	fprintf(stderr, "\"win32=%d\"\n", (int)count_win32.size());
+	fprintf(stderr, "\"win32total=%d\"\n", count_win32_total);
+	fprintf(stderr, "\"total read=%d\"\n", count_read);
 	if (elems != nullptr) delete elems;
 	elem_cnt = hmap->all_elements(elems);
-	fprintf(stderr, "\"distinct value=%d\" ", elem_cnt);
+	fprintf(stderr, "\"distinct value=%d\"\n", elem_cnt);
 	delete fr;
 	delete hmap;
 
@@ -605,6 +630,7 @@ void TestTimeStability();
 void TestAMA();
 void TestDifferentWindowTime();
 void TestDifferentWindowNumber();
+void TestQueryLength();
 
 int main() {
 	prepare_all_framework();
@@ -612,12 +638,14 @@ int main() {
 
 	// TestDifferentWindowTime();
 	// TestDifferentWindowNumber();
-	TestErrorGradualness();
+	// TestErrorGradualness();
 	// TestTimeStability();
 
 	// TestDifferentMemory();
 
 	// TestAMA();
+
+	TestQueryLength();
 	
 	return 0;
 }
@@ -761,9 +789,6 @@ void TestDifferentWindowNumber(){
 			fp = fopen("1_2_Tower_WAAE_winnum.csv", "w");
 			fprintf(fp, "Window Number,STower,HTower,AdaTower\n");
 			fclose(fp);
-			fp = fopen("1_2_Tower_WF1_winnum.csv", "w");
-			fprintf(fp, "Window Number,STower,HTower,AdaTower\n");
-			fclose(fp);
 		}
 		Newfigure_fixed_config_result("1_2_Tower_WARE_winnum.csv", num, cnt_test_ware, all_tower_framwork);
 		Newfigure_fixed_config_result("1_2_Tower_WAAE_winnum.csv", num, cnt_test_waae, all_tower_framwork);
@@ -814,7 +839,7 @@ void TestErrorGradualness(){
 #ifdef TEST_DA
 	// DA
 	cfg.memory = DA_DEFAULT_MEMORY;
-	// Newfigure_memory_fixed("2_1_1_DA_f1.csv",topk_test_f1,all_dasketch_framwork);
+	Newfigure_memory_fixed("2_1_1_DA_f1.csv",topk_test_f1,all_dasketch_framwork);
 	Newfigure_memory_fixed("2_1_1_DA_ARE.csv",topk_test_are,all_dasketch_framwork);
 #endif
 
@@ -899,6 +924,7 @@ void TestTimeStability(){
 
 void TestAMA(){
 	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(120));
+	initialize(true);
 #ifdef TEST_DA
 	// DA
 	cfg.memory = DA_DEFAULT_MEMORY;
@@ -933,6 +959,17 @@ void TestAMA(){
 	// BF
 	cfg.memory = MB(15);
 	figure11_1("4_3_1_BF_AMA.csv");
+#endif
+}
+
+void TestQueryLength(){
+	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(120));
+	initialize(true);
+#ifdef TEST_TOWER
+	// Tower
+	cfg.memory = TOWER_DEFAULT_MEMORY;
+	Newfigure_memory_fixed("1_2_Tower_QueryLength_ARE.csv",cnt_test_multi_are,all_tower_framwork);
+	Newfigure_memory_fixed("1_2_Tower_QueryLength_AAE.csv",cnt_test_multi_aae,all_tower_framwork);
 #endif
 }
 

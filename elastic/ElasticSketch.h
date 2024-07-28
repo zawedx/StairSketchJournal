@@ -26,7 +26,7 @@ public:
         light_mem = tot_memory_in_bytes - heavy_mem;
         bucket_num = heavy_mem / sizeof(Bucket);
         // to shrink
-        if (shrink_flag) bucket_num = bucket_num / 64 * 64;
+        if (shrink_flag) bucket_num = bucket_num / shrink_flag * shrink_flag;
         heavy_mem = bucket_num * sizeof(Bucket);
         light_mem = tot_memory_in_bytes - heavy_mem;
         heavy_part = new HeavyPart(bucket_num);

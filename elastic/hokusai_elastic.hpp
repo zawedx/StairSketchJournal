@@ -42,7 +42,7 @@ public:
 			elastic[i] = elastic[i-1];
 			if (elastic[i] && shk[i]) elastic[i]->shrink();
 		}
-		elastic[0] = new ElasticSketch(elastic0_memory, 1);
+		elastic[0] = new ElasticSketch(elastic0_memory, max_win_num);
 	}
 
 	void add(int wid, elem_t e, int delta = 1) override {

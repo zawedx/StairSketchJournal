@@ -265,7 +265,7 @@ public:
 			da[i] = da[i-1];
 			if (da[i] && shk[i]) da[i]->shrink();
 		}
-		da[0] = new da_sketch(da0_memory, hf_num, 1);
+		da[0] = new da_sketch(da0_memory, hf_num, max_win_num);
 	}
 
 	void add(int wid, elem_t e, int delta = 1) override {

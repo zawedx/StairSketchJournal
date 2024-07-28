@@ -68,5 +68,7 @@ void delete_topk_result(pair<elem_t, int>** answer_begin, pair<elem_t, int>** an
 
 #define DA_DEFAULT_MEMORY MB(10)
 #define ELASTIC_DEFAULT_MEMORY MB(20)
-#define TOWER_DEFAULT_MEMORY MB(60)
+#define TOWER_DEFAULT_MEMORY MB(1)
 #define CMCU_DEFAULT_MEMORY MB(60)
+
+#define MAX_WINNUMBER 256
