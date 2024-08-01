@@ -6,6 +6,7 @@
 #include <functional>
 
 
+#define CAIDA_DATA_RANGE 960
 #define SELECTED_DATASET "webpage"
 #define TEST_REPEAT_TIME 1
 // #define TEST_DA
@@ -596,32 +597,57 @@ void figure11_1(const char* file_name) {
 // 	fclose(fp);
 // }
 
-vector<function<framework*(int)> > all_dasketch_framwork;
-vector<function<framework*(int)> > all_hll_framwork;
-vector<function<framework*(int)> > all_elastic_framwork;
-vector<function<framework*(int)> > all_tower_framwork;
-vector<function<framework*(int)> > all_cmcu_framwork;
+vector<function<framework*(int)> > all_dasketch_framwork, dasketch_framework_list[10];
+vector<function<framework*(int)> > all_hll_framwork, hll_framework_list[10];
+vector<function<framework*(int)> > all_elastic_framwork, elastic_framework_list[10];
+vector<function<framework*(int)> > all_tower_framwork, tower_framework_list[10];
+vector<function<framework*(int)> > all_cmcu_framwork, cmcu_framework_list[10];
 void prepare_all_framework(){
 	// DA
 	all_dasketch_framwork.push_back([](int memory){ return build_sda(memory); });
 	all_dasketch_framwork.push_back(build_hda);
 	all_dasketch_framwork.push_back(build_adada);
+	for (int i = 0; i < 10; i++){
+		dasketch_framework_list[i].push_back([i](int memory){ return build_sda(memory, i); });
+		dasketch_framework_list[i].push_back(build_hda);
+		dasketch_framework_list[i].push_back(build_adada);
+	}
 	// HLL
 	all_hll_framwork.push_back([](int memory){ return build_shll(memory); });
 	all_hll_framwork.push_back(build_hhll);
+	for (int i = 0; i < 10; i++){
+		hll_framework_list[i].push_back([i](int memory){ return build_shll(memory, i); });
+		hll_framework_list[i].push_back(build_hhll);
+	}
 	// Elastic
 	all_elastic_framwork.push_back([](int memory){ return build_selastic(memory); });
 	all_elastic_framwork.push_back(build_helastic);
 	all_elastic_framwork.push_back(build_adaelastic);
+	for (int i = 0; i < 10; i++){
+		elastic_framework_list[i].push_back([i](int memory){ return build_selastic(memory, i); });
+		elastic_framework_list[i].push_back(build_helastic);
+		elastic_framework_list[i].push_back(build_adaelastic);
+	}
 	// Tower
 	all_tower_framwork.push_back([](int memory){ return build_stower(memory); });
 	all_tower_framwork.push_back(build_htower);
 	all_tower_framwork.push_back(build_adatower);
+	for (int i = 0; i < 10; i++){
+		tower_framework_list[i].push_back([i](int memory){ return build_stower(memory, i); });
+		tower_framework_list[i].push_back(build_htower);
+		tower_framework_list[i].push_back(build_adatower);
+	}
 	// CMCU
 	all_cmcu_framwork.push_back([](int memory){ return build_scm(memory); });
 	all_cmcu_framwork.push_back([](int memory){ return build_scu(memory); });
 	all_cmcu_framwork.push_back(build_adacm);
 	all_cmcu_framwork.push_back(build_iacm);
+	for (int i = 0; i < 10; i++){
+		cmcu_framework_list[i].push_back([i](int memory){ return build_scm(memory, i); });
+		cmcu_framework_list[i].push_back([i](int memory){ return build_scu(memory, i); });
+		cmcu_framework_list[i].push_back(build_adacm);
+		cmcu_framework_list[i].push_back(build_iacm);
+	}
 }
 
 void TestDifferentMemory();
@@ -637,7 +663,7 @@ int main() {
 	srand(1214);
 
 	// TestDifferentWindowTime();
-	// TestDifferentWindowNumber();
+	TestDifferentWindowNumber();
 	// TestErrorGradualness();
 	// TestTimeStability();
 
@@ -645,7 +671,7 @@ int main() {
 
 	// TestAMA();
 
-	TestQueryLength();
+	// TestQueryLength();
 	
 	return 0;
 }
@@ -672,7 +698,7 @@ void Newfigure_fixed_config_result(const char* file_name, int current_config,
 }
 
 void TestDifferentWindowTime(){
-	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(4));
+	cfg = config(SELECTED_DATASET, 32, 32, ((double)CAIDA_DATA_RANGE) / 32, MB(4));
 	int start_tim = 10, end_tim = 60, gap_tim = 10;
 	for (int tim = start_tim; tim <= end_tim; tim += gap_tim) {
 		initialize(true, tim);
@@ -722,9 +748,6 @@ void TestDifferentWindowTime(){
 			fp = fopen("1_2_Tower_WAAE_wintime.csv", "w");
 			fprintf(fp, "Window Time(s),STower,HTower,AdaTower\n");
 			fclose(fp);
-			fp = fopen("1_2_Tower_WF1_wintime.csv", "w");
-			fprintf(fp, "Window Time(s),STower,HTower,AdaTower\n");
-			fclose(fp);
 		}
 		Newfigure_fixed_config_result("1_2_Tower_WARE_wintime.csv", tim, cnt_test_ware, all_tower_framwork);
 		Newfigure_fixed_config_result("1_2_Tower_WAAE_wintime.csv", tim, cnt_test_waae, all_tower_framwork);
@@ -736,9 +759,9 @@ void TestDifferentWindowTime(){
 }
 
 void TestDifferentWindowNumber(){
-	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(4));
+	cfg = config(SELECTED_DATASET, 32, 32, ((double)CAIDA_DATA_RANGE) / 32, MB(4));
 	int start_num = 8, end_num = 256;
-	for (int num = start_num; num <= end_num; num <<= 1) {
+	for (int num = start_num, stair_level_number = 3; num <= end_num; num <<= 1, stair_level_number++) {
 		cfg.ds_win_num = num;
 		cfg.win_num = num;
 		cfg.win_time = 480.0 / cfg.win_num;
@@ -756,9 +779,9 @@ void TestDifferentWindowNumber(){
 			fprintf(fp, "Window Number,SDA,HDA,AdaDA\n");
 			fclose(fp);
 		}
-		Newfigure_fixed_config_result("2_2_DA_WARE_winnum.csv", num, topk_test_ware, all_dasketch_framwork);
-		Newfigure_fixed_config_result("2_2_DA_WAAE_winnum.csv", num, topk_test_waae, all_dasketch_framwork);
-		Newfigure_fixed_config_result("2_2_DA_WF1_winnum.csv", num, topk_test_wf1, all_dasketch_framwork);
+		Newfigure_fixed_config_result("2_2_DA_WARE_winnum.csv", num, topk_test_ware, dasketch_framework_list[stair_level_number]);
+		Newfigure_fixed_config_result("2_2_DA_WAAE_winnum.csv", num, topk_test_waae, dasketch_framework_list[stair_level_number]);
+		Newfigure_fixed_config_result("2_2_DA_WF1_winnum.csv", num, topk_test_wf1, dasketch_framework_list[stair_level_number]);
 	#endif
 	#ifdef TEST_HLL
 		// HLLFigure();
@@ -776,9 +799,9 @@ void TestDifferentWindowNumber(){
 			fprintf(fp, "Window Number,SElastic,HElastic,AdaElastic\n");
 			fclose(fp);
 		}
-		Newfigure_fixed_config_result("2_2_Elastic_WARE_winnum.csv", num, topk_test_ware, all_elastic_framwork);
-		Newfigure_fixed_config_result("2_2_Elastic_WAAE_winnum.csv", num, topk_test_waae, all_elastic_framwork);
-		Newfigure_fixed_config_result("2_2_Elastic_WF1_winnum.csv", num, topk_test_wf1, all_elastic_framwork);
+		Newfigure_fixed_config_result("2_2_Elastic_WARE_winnum.csv", num, topk_test_ware, elastic_framework_list[stair_level_number]);
+		Newfigure_fixed_config_result("2_2_Elastic_WAAE_winnum.csv", num, topk_test_waae, elastic_framework_list[stair_level_number]);
+		Newfigure_fixed_config_result("2_2_Elastic_WF1_winnum.csv", num, topk_test_wf1, elastic_framework_list[stair_level_number]);
 	#endif
 	#ifdef TEST_TOWER
 		cfg.memory = TOWER_DEFAULT_MEMORY;
@@ -790,8 +813,8 @@ void TestDifferentWindowNumber(){
 			fprintf(fp, "Window Number,STower,HTower,AdaTower\n");
 			fclose(fp);
 		}
-		Newfigure_fixed_config_result("1_2_Tower_WARE_winnum.csv", num, cnt_test_ware, all_tower_framwork);
-		Newfigure_fixed_config_result("1_2_Tower_WAAE_winnum.csv", num, cnt_test_waae, all_tower_framwork);
+		Newfigure_fixed_config_result("1_2_Tower_WARE_winnum.csv", num, cnt_test_ware, tower_framework_list[stair_level_number]);
+		Newfigure_fixed_config_result("1_2_Tower_WAAE_winnum.csv", num, cnt_test_waae, tower_framework_list[stair_level_number]);
 	#endif
 	#ifdef TEST_BF
 		// BloomFilter();
@@ -834,7 +857,7 @@ void Newfigure_memory_fixed(const char* file_name,
 }
 
 void TestErrorGradualness(){
-	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(120));
+	cfg = config(SELECTED_DATASET, 32, 32, ((double)CAIDA_DATA_RANGE) / 32, MB(120));
 	initialize(true);
 #ifdef TEST_DA
 	// DA
@@ -878,7 +901,7 @@ void TestErrorGradualness(){
 }
 
 void TestTimeStability(){
-	cfg = config(SELECTED_DATASET, 64, 64, 60, MB(120));
+	cfg = config(SELECTED_DATASET, 64, 64, ((double)CAIDA_DATA_RANGE) / 64, MB(120));
 	initialize(true);
 #ifdef TEST_DA
 	// DA
@@ -923,7 +946,7 @@ void TestTimeStability(){
 }
 
 void TestAMA(){
-	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(120));
+	cfg = config(SELECTED_DATASET, 32, 32, ((double)CAIDA_DATA_RANGE) / 32, MB(120));
 	initialize(true);
 #ifdef TEST_DA
 	// DA
@@ -963,7 +986,7 @@ void TestAMA(){
 }
 
 void TestQueryLength(){
-	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(120));
+	cfg = config(SELECTED_DATASET, 32, 32, ((double)CAIDA_DATA_RANGE) / 32, MB(120));
 	initialize(true);
 #ifdef TEST_TOWER
 	// Tower
@@ -1063,7 +1086,7 @@ void BloomFilter(){
 }
 
 void TestDifferentMemory(){
-	cfg = config(SELECTED_DATASET, 32, 32, 60, MB(4));
+	cfg = config(SELECTED_DATASET, 32, 32, ((double)CAIDA_DATA_RANGE) / 32, MB(4));
 	initialize(true);
 #ifdef TEST_DA
 	DASketchFigure();

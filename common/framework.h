@@ -1,5 +1,7 @@
 #pragma once
 #include "common.hpp"
+#include <string>
+using std::string;
 
 class framework {
 public:
