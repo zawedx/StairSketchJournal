@@ -663,8 +663,8 @@ int main() {
 	srand(1214);
 
 	// TestDifferentWindowTime();
-	TestDifferentWindowNumber();
-	// TestErrorGradualness();
+	// TestDifferentWindowNumber();
+	TestErrorGradualness();
 	// TestTimeStability();
 
 	// TestDifferentMemory();

@@ -15,7 +15,7 @@ public:
 		intv = new interval[elastic_num];
 
 		for (int i = 0; i < elastic_num; ++i)
-			elastic[i] = new ElasticSketch(mem / elastic_num);
+			elastic[i] = new ElasticSketch(mem / elastic_num, hf_num);
 		cur = 0;
 		idx = 0;
 		_cnt = 0;

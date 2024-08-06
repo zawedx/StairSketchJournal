@@ -67,7 +67,7 @@ void delete_topk_result(pair<elem_t, int>** answer_begin, pair<elem_t, int>** an
 #define TOP_K 1000
 
 #define DA_DEFAULT_MEMORY MB(10)
-#define ELASTIC_DEFAULT_MEMORY MB(20)
+#define ELASTIC_DEFAULT_MEMORY MB(5)
 #define TOWER_DEFAULT_MEMORY MB(30)
 #define CMCU_DEFAULT_MEMORY MB(60)
 

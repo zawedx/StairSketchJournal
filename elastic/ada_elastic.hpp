@@ -15,7 +15,7 @@ public:
 	 */
 	ada_elastic(int memory, int hf_num)
 	:total_memory(memory){
-		sketch = new ElasticSketch(memory);
+		sketch = new ElasticSketch(memory, hf_num);
 	}
 
 	~ada_elastic() override {

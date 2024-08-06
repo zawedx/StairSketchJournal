@@ -19,7 +19,7 @@ class ElasticSketch
     // LightPart<light_mem> light_part;
 
 public:
-    ElasticSketch(int _tot_memory_in_bytes, int shrink_flag = 0)
+    ElasticSketch(int _tot_memory_in_bytes, int hf_num, int shrink_flag = 0)
     :tot_memory_in_bytes(_tot_memory_in_bytes){
         double heavy_ratio = 0.8;
         heavy_mem = tot_memory_in_bytes * heavy_ratio;
@@ -30,7 +30,7 @@ public:
         heavy_mem = bucket_num * sizeof(Bucket);
         light_mem = tot_memory_in_bytes - heavy_mem;
         heavy_part = new HeavyPart(bucket_num);
-        light_part = new LightPart(light_mem, shrink_flag);
+        light_part = new LightPart(light_mem, hf_num, shrink_flag);
     }
     // ElasticSketch(int _bucket_num, int _tot_memory_in_bytes)
     //     : bucket_num(_bucket_num), tot_memory_in_bytes(_tot_memory_in_bytes){
