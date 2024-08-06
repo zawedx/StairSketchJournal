@@ -18,7 +18,7 @@ public:
 
 	LightPart(int _init_mem_in_bytes, int shrink_flag = 0): counter_num(_init_mem_in_bytes)
 	{
-		if (shrink_flag) counter_num = counter_num / 64 * 64;
+		if (shrink_flag) counter_num = counter_num / shrink_flag * shrink_flag;
 		counters = new uint8_t[counter_num];
 		clear();
 		std::random_device rd;

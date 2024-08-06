@@ -8,7 +8,7 @@ class csm_sketch {
 public:	
 	csm_sketch(int memory, int hf_num, int shrink_flag = 0) 
 		: n(memory >> 2), hf_num(hf_num), hf(new hash_func[hf_num]) {
-		if (shrink_flag) n = n / 64 * 64;
+		if (shrink_flag) n = n / shrink_flag * shrink_flag;
 		pool = new int[n];
 		memset(pool, 0, sizeof(int) * n);
 		counter = 0;

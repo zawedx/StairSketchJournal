@@ -10,8 +10,8 @@
 #define SELECTED_DATASET "webpage"
 #define TEST_REPEAT_TIME 1
 // #define TEST_DA
-// #define TEST_ELASTIC
-#define TEST_TOWER
+#define TEST_ELASTIC
+// #define TEST_TOWER
 // #define TEST_CMCU
 // #define TEST_HLL
 // #define TEST_BF
@@ -764,7 +764,7 @@ void TestDifferentWindowNumber(){
 	for (int num = start_num, stair_level_number = 3; num <= end_num; num <<= 1, stair_level_number++) {
 		cfg.ds_win_num = num;
 		cfg.win_num = num;
-		cfg.win_time = 480.0 / cfg.win_num;
+		cfg.win_time = ((double)CAIDA_DATA_RANGE) / cfg.win_num;
 		initialize_win_num_test();
 	#ifdef TEST_DA
 		cfg.memory = DA_DEFAULT_MEMORY;

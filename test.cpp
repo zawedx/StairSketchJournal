@@ -32,7 +32,7 @@ vector<tuple<int, int, int, int> > stair_config(int memory, int k) {
 		));
 	return ds_config;
 }
-
+/*
 vector<tuple<int, int, int, int> > stair_config_separate(int memory, int k) {
 	int sum = 0;
 	for (int i = 0; i <= k; ++i) 
@@ -47,6 +47,25 @@ vector<tuple<int, int, int, int> > stair_config_separate(int memory, int k) {
 			unit * (1 << i), // * (i == k ? 4 : 1), 
 			1 << i, 
 			1, // i == k ? 4 : 1, 
+			1
+		));
+	return ds_config;
+}
+*/
+vector<tuple<int, int, int, int> > stair_config_separate(int memory, int k) {
+	int sum = 0;
+	for (int i = 0; i <= k; ++i) 
+		sum += (1 << i); // * (i == k ? 4 : 1);
+
+	double unit = (double) memory / sum;
+	vector<tuple<int, int, int, int> > ds_config = 
+		{ make_tuple(unit, 1, 4, 1) };
+
+	for (int i = 1; i <= k; ++i)
+		ds_config.push_back(make_tuple(
+			unit * (1 << i), // * (i == k ? 4 : 1), 
+			1 << i, 
+			i == k ? 1 : 2, // i == k ? 4 : 1, 
 			1
 		));
 	return ds_config;
