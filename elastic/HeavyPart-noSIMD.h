@@ -3,6 +3,7 @@
 
 #include "param.h"
 #include "../common/common.hpp"
+#include "../common/hash.hpp"
 
 
 
@@ -14,8 +15,9 @@ class HeavyPart
 public:
 	Bucket *buckets;
 	// alignas(64) Bucket buckets[bucket_num];
+	hash_func* hf;
 
-	HeavyPart(int _bucket_num): bucket_num(_bucket_num)
+	HeavyPart(int _bucket_num): bucket_num(_bucket_num), hf(new hash_func[1])
 	{
 		buckets = new Bucket[bucket_num];
 		clear();
@@ -27,6 +29,7 @@ public:
 
 	void clear()
 	{
+		hf[0].reset();
 		memset(buckets, 0, sizeof(Bucket) * bucket_num);
 	}
 
@@ -149,7 +152,8 @@ private:
 	int CalculateFP(int wid, uint8_t *key, elem_t &fp)
 	{
 		fp = *((elem_t*)key);
-		return (CalculateBucketPos(fp) % bucket_num + wid) % bucket_num;
+		return (hf[0](fp) + wid) % bucket_num;
+		// return (CalculateBucketPos(fp) % bucket_num + wid) % bucket_num;
 	}
 };
 
