@@ -658,9 +658,15 @@ void TestDifferentWindowTime();
 void TestDifferentWindowNumber();
 void TestQueryLength();
 
+void figure12_1();
+void figure12_2();
+
 int main() {
 	prepare_all_framework();
 	srand(1214);
+
+	figure12_2();
+	return 0;
 
 	// TestDifferentWindowTime();
 	// TestDifferentWindowNumber();
@@ -1106,4 +1112,55 @@ void TestDifferentMemory(){
 #ifdef TEST_BF
 	BloomFilter();
 #endif
+}
+
+
+
+
+
+
+
+
+
+
+void figure12_1() {
+	cfg = config("CAIDA", 32, 32, 1, 15*1024*1024);
+	
+	initialize(true);
+	FILE *fp = fopen("figure12_1.txt", "w");
+	double *qcnt = new double[cfg.win_num + 1];
+	fprintf(stderr, "read complete\n");
+
+	fprintf(fp, "window id,");
+	for (int i = 1; i <= cfg.win_num; ++i)
+		fprintf(fp, "%d,", i);
+	fprintf(fp, "\n");
+
+	fprintf(fp, "SBF: %.6f\n", test_speed_old(build_sbf(cfg.memory,5)));
+	fprintf(fp, "PBF: %.6f\n", test_speed_old(build_pbf(cfg.memory)));
+	fprintf(fp, "IABF: %.6f\n", test_speed_old(build_iabf(cfg.memory)));
+
+	fclose(fp);
+}
+
+void figure12_2() {
+	cfg = config("CAIDA", 32, 32, 1, 120*1024*1024);
+	initialize(true);
+	
+	FILE *fp = fopen("figure12_2.txt", "w");
+	double *qcnt = new double[cfg.win_num + 1];
+	fprintf(stderr, "read complete\n");
+
+	fprintf(fp, "window id,");
+	for (int i = 1; i <= cfg.win_num; ++i)
+		fprintf(fp, "%d,", i);
+	fprintf(fp, "\n");
+
+	fprintf(fp, "SCM: %.6f\n", test_speed(build_scm(cfg.memory,5)));
+	fprintf(fp, "SCU: %.6f\n", test_speed(build_scu(cfg.memory,5)));
+	fprintf(fp, "ADACM: %.6f\n", test_speed(build_adacm(cfg.memory)));
+	fprintf(fp, "IACM: %.6f\n", test_speed(build_iacm(cfg.memory)));
+
+	fclose(fp);
+
 }
