@@ -8,6 +8,7 @@
 #include "params.h"
 #include "murmur3.h"
 #include "../common/common.hpp"
+#include "../common/hash.hpp"
 
 class TowerSketch
 {
@@ -15,7 +16,7 @@ public:
 	mutable long long _cnt;
     uint32_t w[d];
     uint32_t *A[d];
-    uint32_t hashseed[d];
+    hash_func hf[d];
     int idx[d];
 
     TowerSketch() {}
@@ -37,12 +38,14 @@ public:
             w[i] = w_d << 5 - i - 1;
             A[i] = new uint32_t[w_d];
             memset(A[i], 0, w_d * sizeof(uint32_t));
-            hashseed[i] = rd() % MAX_PRIME32;
+            hf[i].reset();
         }
     }
 
     void clear()
     {
+        for (int i = 0; i < d; i++)
+            hf[i].reset();
         for (int i = 0; i < d; ++i)
             memset(A[i], 0, w[d-1] * sizeof(uint32_t));
     }
@@ -57,7 +60,7 @@ public:
     virtual uint32_t insert(const char *key, uint16_t key_len, uint32_t delta, int wid)
     {
         for (int i = 0; i < d; ++i)
-            idx[i] = (MurmurHash3_x86_32(key, key_len, hashseed[i]) % w[i] + wid) % w[i];
+            idx[i] = (hf[i](*((elem_t*)key)) % w[i] + wid) % w[i];
 
         uint32_t ret = UINT32_MAX;
         for (int i = 0; i < d; ++i)
@@ -85,7 +88,7 @@ public:
         uint32_t ret = UINT32_MAX;
         for (int i = 0; i < d; ++i)
         {
-            uint32_t idx = (MurmurHash3_x86_32(key, key_len, hashseed[i]) % w[i] + wid) % w[i];
+            uint32_t idx = (hf[i](*((elem_t*)key)) % w[i] + wid) % w[i];
             uint32_t a = A[i][idx >> cpw[i]];
             uint32_t shift = (idx & lo[i]) << cs[i];
             uint32_t val = (a >> shift) & mask[i];
@@ -132,7 +135,7 @@ public:
     {
         uint32_t min_val = UINT32_MAX;
         for (int i = 0; i < d; ++i)
-            idx[i] = MurmurHash3_x86_32(key, key_len, hashseed[i]) % w[i];
+            idx[i] = hf[i](*((elem_t*)key)) % w[i];
         for (int i = 0; i < d; ++i)
         {
             uint32_t a = A[i][idx[i] >> cpw[i]];
@@ -162,7 +165,7 @@ public:
     {
         uint32_t min_val = UINT32_MAX;
         for (int i = 0; i < d; ++i)
-            idx[i] = MurmurHash3_x86_32(key, key_len, hashseed[i]) % w[i];
+            idx[i] = hf[i](*((elem_t*)key)) % w[i];
         for (int i = 0; i < d; ++i)
         {
             uint32_t &a = A[i][idx[i] >> cpw[i]];

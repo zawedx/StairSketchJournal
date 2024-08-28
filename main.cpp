@@ -36,14 +36,14 @@ void initialize(bool save = false, double win_time = cfg.win_time) {
 		win_data[i].clear(), win_set[i].clear();
 
 	file_reader* fr = new file_reader(cfg);
-	HashMap* hmap = new HashMap;
+	// HashMap* hmap = new HashMap;
 	elem_t e; double ts, ts_begin;
 	fr->read(e, ts); ts_begin = ts;
 	int count_read = 1;
 	unordered_map<elem_t, int> count_win32;
 	int count_win32_total = 0;
 	for (int i = 1; i <= cfg.win_num; ) {
-		hmap->add(i, e);
+		// hmap->add(i, e);
 		if (save) {
 			win_data[i].push_back(e);
 			win_set[i][e]++;
@@ -72,10 +72,10 @@ void initialize(bool save = false, double win_time = cfg.win_time) {
 	fprintf(stderr, "\"win32total=%d\"\n", count_win32_total);
 	fprintf(stderr, "\"total read=%d\"\n", count_read);
 	if (elems != nullptr) delete elems;
-	elem_cnt = hmap->all_elements(elems);
-	fprintf(stderr, "\"distinct value=%d\"\n", elem_cnt);
+	// elem_cnt = hmap->all_elements(elems);
+	// fprintf(stderr, "\"distinct value=%d\"\n", elem_cnt);
 	delete fr;
-	delete hmap;
+	// delete hmap;
 
 	fprintf(stderr, "initialization complete\n");
 }
