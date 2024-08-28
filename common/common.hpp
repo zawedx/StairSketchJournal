@@ -72,3 +72,5 @@ void delete_topk_result(pair<elem_t, int>** answer_begin, pair<elem_t, int>** an
 #define CMCU_DEFAULT_MEMORY MB(60)
 
 #define MAX_WINNUMBER 256
+
+#define TOPK_ADA_SHIFT_OPTIMIZATION 64

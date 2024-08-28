@@ -35,10 +35,16 @@ public:
 	 * @param delta The number of copies (of e) to add
 	 */
 	void add(int wid, elem_t e, int delta = 1) override {
+		#ifdef TOPK_ADA_SHIFT_OPTIMIZATION
+			wid += TOPK_ADA_SHIFT_OPTIMIZATION;
+		#endif
 		sketch->insert(wid, e, delta * wid);
 	}
 
 	pair<elem_t, int>** query_topk(pair<elem_t, int>** &result, int wid, int k = TOP_K) const override {
+		#ifdef TOPK_ADA_SHIFT_OPTIMIZATION
+			wid += TOPK_ADA_SHIFT_OPTIMIZATION;
+		#endif
 		pair<elem_t, int>** array_head = new pair<elem_t, int>*[2];
 		result = array_head;
 		sketch->query_topk(result[0], wid, k);
